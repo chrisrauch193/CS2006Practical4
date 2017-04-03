@@ -10,8 +10,8 @@ other White = Black
 type Position = (Int, Int)
 
 -- A Board is a record containing the board size (a board is a square grid,
--- n * n), the number of pieces in a row required to win, and a list 
--- of pairs of position and the colour at that position.  So a 10x10 board 
+-- n * n), the number of pieces in a row required to win, and a list
+-- of pairs of position and the colour at that position.  So a 10x10 board
 -- for a game of 5 in a row with a black piece at 5,5 and a white piece at 8,7
 -- would be represented as:
 --
@@ -43,13 +43,16 @@ initWorld = World initBoard Black
 makeMove :: Board -> Col -> Position -> Maybe Board
 makeMove = undefined
 
+insideBoard :: Int -> Position -> Bool
+insideBoard dimension (x,y) = (elem x valid) && (elem y valid)
+                                  where valid = [1..dimension]
 -- Check whether the board is in a winning state for either player.
 -- Returns 'Nothing' if neither player has won yet
 -- Returns 'Just c' if the player 'c' has won
 checkWon :: Board -> Maybe Col
 checkWon = undefined
 
-{- Hint: One way to implement 'checkWon' would be to write functions 
+{- Hint: One way to implement 'checkWon' would be to write functions
 which specifically check for lines in all 8 possible directions
 (NW, N, NE, E, W, SE, SW)
 
@@ -65,6 +68,3 @@ For every position ((x, y), col) in the 'pieces' list:
 -- return an integer indicating how good the board is for that colour.
 evaluate :: Board -> Col -> Int
 evaluate = undefined
-
-
-
