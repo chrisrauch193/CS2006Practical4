@@ -10,4 +10,3 @@ import Board
 -- as a grid plus pieces.
 drawWorld :: World -> Picture
 drawWorld w = Color blue $ Circle 100
-
