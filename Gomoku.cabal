@@ -1,7 +1,7 @@
 name:                Gomoku
 version:             0.1.0.0
 synopsis:            Gomoku (5-in-a-row) game
--- description:         
+-- description:
 homepage:            http://studres.cs.st-andrews.ac.uk/CS2006-APP
 author:              Edwin Brady
 maintainer:          ecb10@st-andrews.ac.uk

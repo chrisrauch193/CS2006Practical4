@@ -1,13 +1,27 @@
 module Board where
 
 data Col = Black | White
-  deriving Show
+  deriving (Show, Eq)
 
 other :: Col -> Col
 other Black = White
 other White = Black
 
 type Position = (Int, Int)
+
+type Coordinate = (Float, Float)
+
+gridSize :: Float
+gridSize = 480
+
+halfSize :: Float
+halfSize = gridSize / 2
+
+cellSize :: Int -> Float
+cellSize dimension = gridSize / fromIntegral dimension
+
+pieceRadius :: Float
+pieceRadius = 10
 
 -- A Board is a record containing the board size (a board is a square grid,
 -- n * n), the number of pieces in a row required to win, and a list
