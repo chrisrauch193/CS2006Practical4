@@ -15,9 +15,15 @@ import Debug.Trace
 -- to stderr, which can be a very useful way of debugging!
 handleInput :: Event -> World -> World
 handleInput (EventMotion (x, y)) b
-    = trace ("Mouse moved to: " ++ show (convertCoord x, convertCoord y) ++ show(x, y)) b
+    = trace ("Mouse moved to: " ++ show (x, y) ++ show(x, y)) b
 handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) b
-    = trace ("Left button pressed at: " ++ show (x,y)) b
+      = case getPosition (size (board b)) x y of
+          Nothing -> b
+          Just position -> b { board = new_board, turn = other (turn b) }
+            where
+              current_board = board b
+              new_board     = current_board { pieces = (position, turn b):(pieces current_board) }
+--    = trace ("Left button pressed at: " ++ show (x,y)) b
 handleInput (EventKey (Char k) Down _ _) b
     = trace ("Key " ++ show k ++ " down") b
 handleInput (EventKey (Char k) Up _ _) b
@@ -31,65 +37,17 @@ handleInput e b = b
  At first, it is reasonable to assume that both players are human players.
 -}
 
-getPosition :: Maybe Float -> Maybe Float -> Maybe Position
-getPosition x y = case x of
-                    Just x -> case y of
-                                    Just y ->  Just (truncate x, truncate y)
-                                    otherwise -> Nothing
-                    otherwise -> Nothing
-
-convertCoord :: Float -> Maybe Float
-convertCoord coord
-    | not (cond_neg9 !! 0) = Nothing
-    | (cond_neg9 !! 1) = Just (-9)
-    | cond_neg8 = Just (-8)
-    | cond_neg7 = Just (-7)
-    | cond_neg6 = Just (-6)
-    | cond_neg5 = Just (-5)
-    | cond_neg4 = Just (-4)
-    | cond_neg3 = Just (-3)
-    | cond_neg2 = Just (-2)
-    | cond_neg1 = Just (-1)
-    | cond_zero = Just (0)
-    | cond_pos1 = Just (1)
-    | cond_pos2 = Just (2)
-    | cond_pos3 = Just (3)
-    | cond_pos4 = Just (4)
-    | cond_pos5 = Just (5)
-    | cond_pos6 = Just (6)
-    | cond_pos7 = Just (7)
-    | cond_pos8 = Just (8)
-    | cond_pos9 = Just (9)
-    | otherwise = Nothing
-    where
-        cond_neg9 = [(coord > -475), (coord < -425)]
-        cond_neg8 = coord < -375
-        cond_neg7 = coord < -325
-        cond_neg6 = coord < -275
-        cond_neg5 = coord < -225
-        cond_neg4 = coord < -175
-        cond_neg3 = coord < -125
-        cond_neg2 = coord < -75
-        cond_neg1 = coord < -25
-        cond_zero = coord < 25
-        cond_pos1 = coord < 75
-        cond_pos2 = coord < 125
-        cond_pos3 = coord < 175
-        cond_pos4 = coord < 225
-        cond_pos5 = coord < 275
-        cond_pos6 = coord < 325
-        cond_pos7 = coord < 375
-        cond_pos8 = coord < 425
-        cond_pos9 = coord < 475
-
-boardSize = 950.0
-halfSize = boardSize / 2
-cellSize d = boardSize / fromIntegral d
+getPosition :: Int -> Float -> Float -> Maybe Position
+getPosition dimension x y = case getIndex dimension x of
+                              Nothing -> Nothing
+                              Just i  -> case getIndex dimension y of
+                                           Nothing -> Nothing
+                                           Just j  -> Just (i, j)
 
 getIndex :: Int -> Float -> Maybe Int
 getIndex dimension value
-  | index == 0 || index == dimension = Nothing
-  | otherwise                        = Just index
+  | index == 0 || index == dimension + 1 = Nothing
+  | otherwise                            = Just index
     where
       cell    = cellSize dimension
       cutoffs = [-halfSize + cell * i | i <- [0 .. fromIntegral dimension]]

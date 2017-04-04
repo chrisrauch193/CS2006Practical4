@@ -3,19 +3,6 @@ module Draw(drawWorld) where
 import Graphics.Gloss
 import Board
 
-type Coordinate = (Float, Float)
-
-gridSize :: Float
-gridSize = 480
-
-halfSize :: Float
-halfSize = gridSize / 2
-
-cellSize :: Int -> Float
-cellSize dimension = gridSize / fromIntegral dimension
-
-pieceRadius :: Float
-pieceRadius = 10
 
 -- Given a world state, return a Picture which will render the world state.
 -- Currently just draws a single blue circle as a placeholder.

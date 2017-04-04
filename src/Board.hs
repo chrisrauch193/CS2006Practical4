@@ -9,9 +9,23 @@ other White = Black
 
 type Position = (Int, Int)
 
+type Coordinate = (Float, Float)
+
+gridSize :: Float
+gridSize = 480
+
+halfSize :: Float
+halfSize = gridSize / 2
+
+cellSize :: Int -> Float
+cellSize dimension = gridSize / fromIntegral dimension
+
+pieceRadius :: Float
+pieceRadius = 10
+
 -- A Board is a record containing the board size (a board is a square grid,
--- n * n), the number of pieces in a row required to win, and a list 
--- of pairs of position and the colour at that position.  So a 10x10 board 
+-- n * n), the number of pieces in a row required to win, and a list
+-- of pairs of position and the colour at that position.  So a 10x10 board
 -- for a game of 5 in a row with a black piece at 5,5 and a white piece at 8,7
 -- would be represented as:
 --
@@ -49,7 +63,7 @@ makeMove = undefined
 checkWon :: Board -> Maybe Col
 checkWon = undefined
 
-{- Hint: One way to implement 'checkWon' would be to write functions 
+{- Hint: One way to implement 'checkWon' would be to write functions
 which specifically check for lines in all 8 possible directions
 (NW, N, NE, E, W, SE, SW)
 
@@ -65,6 +79,3 @@ For every position ((x, y), col) in the 'pieces' list:
 -- return an integer indicating how good the board is for that colour.
 evaluate :: Board -> Col -> Int
 evaluate = undefined
-
-
-
