@@ -82,6 +82,19 @@ convertCoord coord
         cond_pos8 = coord < 425
         cond_pos9 = coord < 475
 
+boardSize = 950.0
+halfSize = boardSize / 2
+cellSize d = boardSize / fromIntegral d
+
+getIndex :: Int -> Float -> Maybe Int
+getIndex dimension value
+  | index == 0 || index == dimension = Nothing
+  | otherwise                        = Just index
+    where
+      cell    = cellSize dimension
+      cutoffs = [-halfSize + cell * i | i <- [0 .. fromIntegral dimension]]
+      index   = length (takeWhile (< value) cutoffs)
+
 -- spaceFreeCheck :: Int -> Int -> Board -> Bool
 -- spaceFreeCheck x y board
 --     |
