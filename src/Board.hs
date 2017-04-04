@@ -1,13 +1,15 @@
 module Board where
-
+import Debug.Trace
 data Col = Black | White
-  deriving Show
+  deriving (Show,Eq)
 
 other :: Col -> Col
 other Black = White
 other White = Black
 
 type Position = (Int, Int)
+
+
 
 -- A Board is a record containing the board size (a board is a square grid,
 -- n * n), the number of pieces in a row required to win, and a list
@@ -21,7 +23,7 @@ data Board = Board { size :: Int,
                      target :: Int,
                      pieces :: [(Position, Col)]
                    }
-  deriving Show
+  deriving (Show,Eq)
 
 -- Default board is 6x6, target is 3 in a row, no initial pieces
 initBoard = Board 6 3 []
@@ -41,7 +43,28 @@ initWorld = World initBoard Black
 -- Play a move on the board; return 'Nothing' if the move is invalid
 -- (e.g. outside the range of the board, or there is a piece already there)
 makeMove :: Board -> Col -> Position -> Maybe Board
-makeMove = undefined
+makeMove board col position
+  | condition == False = Nothing
+  | condition == True  = Just (new_board)
+  where
+    condition = validPlace board col position == True && insideBoard (size board) position
+    new_board = board {pieces = ((position,col):pieces board)}
+convert :: Board -> Maybe Board -> Board
+convert board maybeBoard =  do
+                  case maybeBoard of
+                    Just maybeBoard -> maybeBoard
+                    otherwise -> board
+
+
+validPlace :: Board -> Col->Position -> Bool
+validPlace board col position
+  | condition == [] = True
+  | otherwise = False
+  where
+    condition = filter (matchPiece (position,col)) (pieces board)
+
+matchPiece :: (Position,Col)-> (Position,Col) -> Bool
+matchPiece (pos,col) (checkPos,checkCol) = pos == checkPos
 
 insideBoard :: Int -> Position -> Bool
 insideBoard dimension (x,y) = (elem x valid) && (elem y valid)
