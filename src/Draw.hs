@@ -3,20 +3,57 @@ module Draw(drawWorld) where
 import Graphics.Gloss
 import Board
 
+type Coordinate = (Float, Float)
+
+gridSize :: Float
+gridSize = 480
+
+halfSize :: Float
+halfSize = gridSize / 2
+
+cellSize :: Int -> Float
+cellSize dimension = gridSize / fromIntegral dimension
+
+pieceRadius :: Float
+pieceRadius = 10
+
 -- Given a world state, return a Picture which will render the world state.
 -- Currently just draws a single blue circle as a placeholder.
 --
 -- This will need to extract the Board from the world state and draw it
 -- as a grid plus pieces.
 drawWorld :: World -> Picture
--- drawWorld w = Color blue $ line [(0, 0), (10, 10)]
-drawWorld world =
+drawWorld world = pictures [Color black $ drawGrid dimension,
+                            Color white $ drawPieces dimension whites,
+                            Color black $ drawPieces dimension blacks]
+                    where
+                      dimension = size (board world)
+                      whites = getPositions (pieces (board world)) White
+                      blacks = getPositions (pieces (board world)) Black
 
-drawLines :: Position -> Position -> Position -> Picture
-drawLines (a, b) (c, d) (x, y) = [line [(a + x * i, b + y * i), (c + x * i, d + y * i)] |  i <- [0..19]]
+getPositions :: [(Position, Col)] -> Col -> [Position]
+getPositions [] _ = []
+getPositions ((p, c):remain) check = if c == check then p:(getPositions remain check) else getPositions remain check
 
-drawGrid :: Picture
-drawGrid = pictures [
-                      drawLines (-475, -475) (475, -475) (0, 50),
-                      drawLines (-475, -475) (-475, 475) (50, 0)
-                    ]
+drawLines :: Int -> Coordinate -> Coordinate -> Coordinate -> Picture
+drawLines dimension (a, b) (c, d) (x, y) = pictures [line [(a + x * i, b + y * i), (c + x * i, d + y * i)] | i <- [0 .. fromIntegral dimension]]
+
+drawGrid :: Int -> Picture
+drawGrid dimension = pictures [drawLines dimension (-halfSize, -halfSize) (halfSize, -halfSize) (0, cell), drawLines dimension (-halfSize, -halfSize) (-halfSize, halfSize) (cell, 0)]
+                       where
+                         cell = cellSize dimension
+
+drawPieces :: Int -> [Position] -> Picture
+drawPieces dimension pieces = pictures (map (drawPiece dimension) pieces)
+
+drawPiece :: Int -> Position -> Picture
+drawPiece dimension position = translate x y (circleSolid pieceRadius)
+                                 where
+                                   (x, y) = getCoordinate dimension position
+
+getCoordinate :: Int -> Position -> Coordinate
+getCoordinate dimension (r, c) = (x, y)
+                                   where
+                                     mid = fromIntegral (dimension + 1) / 2
+                                     x   = (fromIntegral r - mid) * cellSize dimension
+                                     y   = (fromIntegral c - mid) * cellSize dimension

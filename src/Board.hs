@@ -1,7 +1,7 @@
 module Board where
 
 data Col = Black | White
-  deriving Show
+  deriving (Show, Eq)
 
 other :: Col -> Col
 other Black = White
