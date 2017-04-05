@@ -1,0 +1,71 @@
+**********************************
+SHARED PROTOCOL BETWEEN MULTIPLE GROUPS
+TO ALLOW FOR NETWORK PLAY BETWEEN EACH OTHER FOR FUN
+Orginal Author: Ryan Wilson (Group V)
+**********************************
+
+S_* = server -> client message
+C_* = client -> server message
+
+1 message per line
+message consists of a tag string eg "THIS_IS_A_TAG" followed by arguments seperated by spaces.
+after each message I list all of the messages that can follow.
+
+Messages:
+
+        C_CONNECT                           ==> S_ACCEPT, S_REFUSE
+             client sends this message as soon as it connects
+             
+        S_ACCEPT <col>                      ==> S_UPDATE_BOARD
+             server can serve this client, client will play as the given colour
+             
+        S_REFUSE                            ==> *connection ends*
+             server will not serve this client, connection ends
+
+        S_UPDATE_BOARD <board_str>          ==> S_UPDATE_BOARD, S_START_MOVE, S_GAME_WON
+             server informs client of what the board looks like
+
+        S_START_MOVE                        ==> C_MAKE_MOVE
+             server informs client that it is to make a move
+
+        C_MAKE_MOVE <pos>                   ==> S_REJECT_MOVE, S_UPDATE_BOARD
+             Client informs the server that it wants to place a piece at the given location.
+
+        S_REJECT_MOVE                       ==> *connection ends*
+             The server has rejected the move, it terminates the connection
+
+        S_GAME_WON <col>                    ==> *connection ends*
+             The game has been won the connection closes
+
+Types:
+        <col> := "b" | "w"
+        <pos> := INT ":" INT
+               * NOTE: x then a colon then y - top left of the board is "0:0" *
+        <board_str> := INT <token> <token> <token> ...
+               * NOTE: first int is size, then a list of zero or more tokens *
+        <token> := <pos> "=" <col>
+               * NOTE: token represents a placed piece at a position *
+
+
+example:
+
+*client connects*
+C_CONNECT
+               S_ACCEPT b
+               S_UPDATE_BOARD 6
+               S_UPDATE_BOARD 6 0:0=w
+               S_START_MOVE
+C_MAKE_MOVE 0.1
+               S_UPDATE_BOARD 6 0:0=w 0:1=b
+               S_UPDATE_BOARD 6 0:0=w 0:1=b 2:0=w
+               S_START_MOVE
+... continues ...
+C_MAKE_MOVE 4.5
+               S_UPDATE_BOARD 6 0:0=w 0:1=b [...] 4:5=b 
+               S_UPDATE_BOARD 6 0:0=w 0:1=b [...] 4:5=b 2:2=w 
+               S_GAME_WON w
+*connection closes*
+
+
+
+                                                                     
