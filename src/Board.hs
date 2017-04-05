@@ -48,13 +48,12 @@ makeMove board col position
   | condition == False = Nothing
   | condition == True  = Just (new_board)
   where
-    condition = validPlace board col position == True && insideBoard (size board) position
+    condition = validPlace board col position == True -- && insideBoard (size board) position
     new_board = board {pieces = ((position,col):pieces board)}
-convert :: Board -> Maybe Board -> Board
-convert board maybeBoard =  do
-                  case maybeBoard of
-                    Just maybeBoard -> maybeBoard
-                    otherwise -> board
+convert :: Maybe Board -> Board
+convert board =  do
+                  case board of
+                    Just board -> board
 
 undo :: Board -> Board
 undo board
@@ -78,9 +77,9 @@ matchPiece (pos,col) (checkPos,checkCol) = condition
   where
     condition = matchPos (pos,col) (checkPos,checkCol) == True && col == checkCol
 
-insideBoard :: Int -> Position -> Bool
-insideBoard dimension (x,y) = (elem x valid) && (elem y valid)
-                                  where valid = [1..dimension]
+-- insideBoard :: Int -> Position -> Bool
+-- insideBoard dimension (x,y) = (elem x valid) && (elem y valid)
+--                                   where valid = [1..dimension]
 -- Check whether the board is in a winning state for either player.
 -- Returns 'Nothing' if neither player has won yet
 -- Returns 'Just c' if the player 'c' has won
