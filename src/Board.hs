@@ -9,7 +9,8 @@ other White = Black
 
 type Position = (Int, Int)
 
-
+directionList :: [Position]
+directionList = [(0,1),(1,0),(0,-1),(-1,0),(1,1),(1,-1),(-1,1),(-1,-1)]
 
 -- A Board is a record containing the board size (a board is a square grid,
 -- n * n), the number of pieces in a row required to win, and a list
@@ -55,16 +56,27 @@ convert board maybeBoard =  do
                     Just maybeBoard -> maybeBoard
                     otherwise -> board
 
+undo :: Board -> Board
+undo board
+  | pieces board == [] = board
+  | otherwise  = new_board
+  where
+    new_board = board {pieces = tail (pieces board)}
 
 validPlace :: Board -> Col->Position -> Bool
 validPlace board col position
   | condition == [] = True
   | otherwise = False
   where
-    condition = filter (matchPiece (position,col)) (pieces board)
+    condition = filter (matchPos (position,col)) (pieces board)
 
-matchPiece :: (Position,Col)-> (Position,Col) -> Bool
-matchPiece (pos,col) (checkPos,checkCol) = pos == checkPos
+matchPos :: (Position,Col)-> (Position,Col) -> Bool
+matchPos (pos,col) (checkPos,checkCol) = pos == checkPos
+
+matchPiece :: (Position,Col) -> (Position,Col) -> Bool
+matchPiece (pos,col) (checkPos,checkCol) = condition
+  where
+    condition = matchPos (pos,col) (checkPos,checkCol) == True && col == checkCol
 
 insideBoard :: Int -> Position -> Bool
 insideBoard dimension (x,y) = (elem x valid) && (elem y valid)
@@ -73,8 +85,25 @@ insideBoard dimension (x,y) = (elem x valid) && (elem y valid)
 -- Returns 'Nothing' if neither player has won yet
 -- Returns 'Just c' if the player 'c' has won
 checkWon :: Board -> Maybe Col
-checkWon = undefined
+checkWon board
+  | condition == [] = Nothing
+  | otherwise = Just (y)
+  where
+    (x,y) = head (pieces board)
+    allMoves = map (checkfunction x y (pieces board) 0) directionList
+    condition = filter (fiveExist) allMoves
 
+fiveExist :: Int -> Bool
+fiveExist listInt = listInt== 5
+
+checkfunction :: Position -> Col-> [(Position,Col)] -> Int-> Position-> Int
+checkfunction (xCheck,yCheck) colToCheck listOfPieces numPieces (aToAdd,bToAdd)
+  | validPieceHere == False = numPieces
+  | otherwise  = checkfunction newPos colToCheck listOfPieces newNumPieces (aToAdd,bToAdd)
+  where
+    newNumPieces = numPieces + 1
+    newPos = (xCheck + aToAdd, yCheck + bToAdd)
+    validPieceHere = filter (matchPiece ((xCheck,yCheck), colToCheck)) listOfPieces /= []
 {- Hint: One way to implement 'checkWon' would be to write functions
 which specifically check for lines in all 8 possible directions
 (NW, N, NE, E, W, SE, SW)
