@@ -25,7 +25,7 @@ pieceRadius :: Float
 pieceRadius = 10
 
 directionList :: [Position]
-directionList = [(0,1),(1,0),(0,-1),(-1,0),(1,1),(1,-1),(-1,1),(-1,-1)]
+directionList = [(0,1),(0,-1),(-1,0),(1,0),(1,1),(-1,-1),(1,-1),(-1,1)]
 
 -- A Board is a record containing the board size (a board is a square grid,
 -- n * n), the number of pieces in a row required to win, and a list
