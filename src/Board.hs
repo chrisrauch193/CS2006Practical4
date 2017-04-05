@@ -1,11 +1,8 @@
 module Board where
 import Debug.Trace
+
 data Col = Black | White
-<<<<<<< HEAD
   deriving (Show, Eq)
-=======
-  deriving (Show,Eq)
->>>>>>> BoardMechanics
 
 other :: Col -> Col
 other Black = White
