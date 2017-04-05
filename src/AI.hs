@@ -43,16 +43,15 @@ buildTree gen b c = let moves = gen b c in -- generated moves
     mkNextStates (pos : xs)
         = case makeMove b c pos of -- try making the suggested move
                Nothing -> mkNextStates xs -- not successful, no new state
-               Just b' -> (pos, buildTree gen b' (other c)) : mkNextStates xs
+               Just b' -> (pos, buildTree gen b' c) : mkNextStates xs
                              -- successful, make move and build tree from
                              -- here for opposite player
 
 getCurrentTree :: World -> GameTree
-getCurrentTree w = buildTree genAllMoves b next_c
+getCurrentTree w = buildTree genAllMoves b t
     where
         b = board w
         t = turn w
-        next_c = other t
 
 -- Get the best next move from a (possibly infinite) game tree. This should
 -- traverse the game tree up to a certain depth, and pick the move which
@@ -71,13 +70,15 @@ updateWorld :: Float -- ^ time since last update (you can ignore this)
             -> World -- ^ current world state
             -> World
 updateWorld t w = w
--- updateWorld t w = nextMove -- Update World with new move. Also send t server
+-- updateWorld t w = nextWorld -- Update World with new move. Also send t server
 --     where
 --         currentTree = getCurrentTree w
 --         b = board w
 --         t = turn w
---         nexMovePos = getBestMove updateLoopTime currentTree
---         nextMove = makeMove b c nexMovePos
+--         next_t = other t
+--         nexMovePos = getBestMove depthAI currentTree
+--         nextMove = makeMove b t nexMovePos
+--         nextWorld = nextMove next_t
 
 {- Hint: 'updateWorld' is where the AI gets called. If the world state
  indicates that it is a computer player's turn, updateWorld should use
