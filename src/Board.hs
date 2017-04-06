@@ -42,7 +42,7 @@ data Board = Board { size :: Int,
   deriving (Show,Eq)
 
 -- Default board is 6x6, target is 3 in a row, no initial pieces
-initBoard = Board 6 3 []
+initBoard = Board 19 5 []
 
 -- Overall state is the board and whose turn it is, plus any further
 -- information about the world (this may later include, for example, player
@@ -106,7 +106,7 @@ checkWon board
     (x,y) = head (pieces board)
     allDirectionMoves = map (checkfunction x y (pieces board) 0) directionList
     allMoves = getTotal allDirectionMoves [] 0
-    condition = filter (fiveExist) allMoves
+    condition = filter (winExist (target board)) allMoves
 
 getTotal :: [Int] -> [Int] -> Int-> [Int]
 getTotal individualMoves calculatedMoves directionNumber
@@ -120,8 +120,10 @@ getTotal individualMoves calculatedMoves directionNumber
     newCalcMoves = intToAdd : calculatedMoves
 
 
-fiveExist :: Int -> Bool
-fiveExist listInt = listInt >= 6
+winExist :: Int-> Int -> Bool
+winExist target listInt = listInt >= amendedTaget
+  where
+    amendedTaget = target +1
 
 checkfunction :: Position -> Col-> [(Position,Col)] -> Int-> Position-> Int
 checkfunction (xCheck,yCheck) colToCheck listOfPieces numPieces (aToAdd,bToAdd)

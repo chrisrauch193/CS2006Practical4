@@ -21,12 +21,11 @@ handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) b
           Nothing -> b
           Just position -> case new_board of
                             Nothing -> (b { board = current_board})
-                            Just new_board -> do
-                                                if (checkWon new_board /= Nothing) then
-                                                    do
-                                                      exitSuccess
-                                                else
-                                                  (b {board = new_board, turn = other (turn b) })
+                            Just new_board -> case winCol of
+                                              Nothing -> b {board = new_board, turn = other (turn b) }
+                                              Just col -> trace (show(col) ++  "WON") b {board = new_board, turn = other (turn b) }
+                                where
+                                  winCol = checkWon new_board
             -- | new_board == Nothing -> (b { board = current_board})
             -- | new_board == Just new_board -> (b {board = new_board, turn = other (turn b) })
             where
@@ -34,9 +33,15 @@ handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) b
               new_board     = makeMove current_board (turn b) position
 --    = trace ("Left button pressed at: " ++ show (x,y)) b
 handleInput (EventKey (Char k) Down _ _) b
-    = trace ("Key " ++ show k ++ " down") b
+    = case k of
+      'u' -> trace ("Key " ++ show k ++ " down") new_b
+      otherwise -> trace ("Key " ++ show k ++ " down") b
+    where
+      curr_board = board b
+      new_b = b {board = undo curr_board, turn = other (turn b)}
 handleInput (EventKey (Char k) Up _ _) b
     = trace ("Key " ++ show k ++ " up") b
+-- handleInput
 handleInput e b = b
 
 {- Hint: when the 'World' is in a state where it is the human player's
