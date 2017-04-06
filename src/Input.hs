@@ -26,8 +26,6 @@ handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) b
                                               Just col -> trace (show(col) ++  "WON") b {board = new_board, turn = other (turn b) }
                                 where
                                   winCol = checkWon new_board
-            -- | new_board == Nothing -> (b { board = current_board})
-            -- | new_board == Just new_board -> (b {board = new_board, turn = other (turn b) })
             where
               current_board = board b
               new_board     = makeMove current_board (turn b) position
