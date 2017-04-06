@@ -6,6 +6,10 @@ import Board
 import Draw
 import Input
 import AI
+import Args
+
+import System.Environment
+import System.Exit
 
 -- 'play' starts up a graphics window and sets up handlers for dealing
 -- with inputs and updating the world state.
@@ -21,8 +25,9 @@ import AI
 -- move
 
 main :: IO ()
-main = play (InWindow "Gomoku" (640, 480) (10, 10)) rose 10
-            initWorld -- in Board.hs
+main = do options <- getOptions
+          play (InWindow "Gomoku" (640, 480) (10, 10)) rose 10
+            (genWorld options) -- in Args.hs
             drawWorld -- in Draw.hs
             handleInput -- in Input.hs
             updateWorld -- in AI.hs

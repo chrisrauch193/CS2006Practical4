@@ -2,7 +2,7 @@ module Board where
 import Debug.Trace
 
 data Col = Black | White
-  deriving (Show, Eq)
+  deriving (Show, Eq, Read)
 
 other :: Col -> Col
 other Black = White
