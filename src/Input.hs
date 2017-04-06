@@ -4,7 +4,7 @@ import Graphics.Gloss.Interface.Pure.Game
 import Graphics.Gloss
 import Board
 import AI
-
+import System.Exit (exitSuccess)
 import Debug.Trace
 
 -- Update the world state given an input event. Some sample input events
@@ -19,15 +19,29 @@ handleInput (EventMotion (x, y)) b
 handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) b
       = case getPosition (size (board b)) x y of
           Nothing -> b
-          Just position -> b { board = new_board, turn = other (turn b) }
+          Just position -> case new_board of
+                            Nothing -> (b { board = current_board})
+                            Just new_board -> case winCol of
+                                              Nothing -> b {board = new_board, turn = other (turn b) }
+                                              Just col -> trace (show(col) ++  "WON") b {board = new_board, turn = other (turn b) }
+                                where
+                                  winCol = checkWon new_board
+            -- | new_board == Nothing -> (b { board = current_board})
+            -- | new_board == Just new_board -> (b {board = new_board, turn = other (turn b) })
             where
               current_board = board b
-              new_board     = current_board { pieces = (position, turn b):(pieces current_board) }
+              new_board     = makeMove current_board (turn b) position
 --    = trace ("Left button pressed at: " ++ show (x,y)) b
 handleInput (EventKey (Char k) Down _ _) b
-    = trace ("Key " ++ show k ++ " down") b
+    = case k of
+      'u' -> trace ("Key " ++ show k ++ " down") new_b
+      otherwise -> trace ("Key " ++ show k ++ " down") b
+    where
+      curr_board = board b
+      new_b = b {board = undo curr_board, turn = other (turn b)}
 handleInput (EventKey (Char k) Up _ _) b
     = trace ("Key " ++ show k ++ " up") b
+-- handleInput
 handleInput e b = b
 
 {- Hint: when the 'World' is in a state where it is the human player's

@@ -24,9 +24,12 @@ import System.Exit
 -- and, if it is an AI's turn, should update the board with an AI generated
 -- move
 
+setColor :: Color
+setColor = makeColorI 205 133 63 0
+
 main :: IO ()
 main = do options <- getOptions
-          play (InWindow "Gomoku" (640, 480) (10, 10)) rose 10
+          play (InWindow "Gomoku" (640, 480) (10, 10)) setColor 10
             (genWorld options) -- in Args.hs
             drawWorld -- in Draw.hs
             handleInput -- in Input.hs
