@@ -25,7 +25,7 @@ pieceRadius :: Float
 pieceRadius = 10
 
 directionList :: [Position]
-directionList = [(0,1),(1,0),(0,-1),(-1,0),(1,1),(1,-1),(-1,1),(-1,-1)]
+directionList = [(0,1),(0,-1),(-1,0),(1,0),(1,1),(-1,-1),(1,-1),(-1,1)]
 
 -- A Board is a record containing the board size (a board is a square grid,
 -- n * n), the number of pieces in a row required to win, and a list
@@ -104,11 +104,24 @@ checkWon board
   | otherwise = Just (y)
   where
     (x,y) = head (pieces board)
-    allMoves = map (checkfunction x y (pieces board) 0) directionList
+    allDirectionMoves = map (checkfunction x y (pieces board) 0) directionList
+    allMoves = getTotal allDirectionMoves [] 0
     condition = filter (fiveExist) allMoves
 
+getTotal :: [Int] -> [Int] -> Int-> [Int]
+getTotal individualMoves calculatedMoves directionNumber
+  | directionNumber == 8 = calculatedMoves
+  | otherwise = getTotal individualMoves newCalcMoves newDirNumber
+  where
+    intOneToAdd = individualMoves !! directionNumber
+    intTwoToAdd = individualMoves !! (directionNumber + 1)
+    intToAdd = intOneToAdd + intTwoToAdd
+    newDirNumber = directionNumber + 2
+    newCalcMoves = intToAdd : calculatedMoves
+
+
 fiveExist :: Int -> Bool
-fiveExist listInt = listInt== 5
+fiveExist listInt = listInt >= 6
 
 checkfunction :: Position -> Col-> [(Position,Col)] -> Int-> Position-> Int
 checkfunction (xCheck,yCheck) colToCheck listOfPieces numPieces (aToAdd,bToAdd)
