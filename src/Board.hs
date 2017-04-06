@@ -1,7 +1,7 @@
 module Board where
 
 data Col = Black | White
-  deriving (Show, Eq)
+  deriving (Show, Eq, Read)
 
 other :: Col -> Col
 other Black = White
@@ -10,6 +10,7 @@ other White = Black
 type Position = (Int, Int)
 
 type Coordinate = (Float, Float)
+
 
 gridSize :: Float
 gridSize = 480
@@ -35,7 +36,16 @@ data Board = Board { size :: Int,
                      target :: Int,
                      pieces :: [(Position, Col)]
                    }
-  deriving Show
+  deriving (Show, Read)
+
+--instance Show Board where
+--    show (Board boardSize boardTarget boardPieces) = (show boardSize) ++ " " ++ (show boardTarget) ++ " " ++ (show stringPieces)
+--       where
+--         showPiece :: (Position,Col) -> String 
+--         showPiece ((x,y),col) = fullPiece
+--           where
+--             fullPiece = (show x) ++ ":" ++ (show y) ++ "=" ++ (show col)
+--         stringPieces = map (showPiece) boardPieces
 
 -- Default board is 6x6, target is 3 in a row, no initial pieces
 initBoard = Board 6 3 []
