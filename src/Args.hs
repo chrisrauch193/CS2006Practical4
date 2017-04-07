@@ -6,17 +6,6 @@ import Control.Monad
 import System.Exit
 import System.Environment
 
-
-data Flag = Target String
-          | Size String
-          | Colour String
-          | Help
-
-data Options = Options  { optTarget :: Int
-                        , optSize   :: Int
-                        , optColour :: Col
-                        }
-
 startOptions :: Options
 startOptions = Options { optTarget = 3
                        , optSize   = 6
@@ -61,4 +50,4 @@ getOptions = do args <- getArgs
                 foldl (>>=) (return startOptions) actions
 
 genWorld :: Options -> World
-genWorld options = World (Board (optSize options) (optTarget options) []) (optColour options) False
+genWorld options = World (Board (optSize options) (optTarget options) []) (optColour options) False options

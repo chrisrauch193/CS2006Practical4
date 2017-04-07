@@ -45,8 +45,8 @@ handleInput (EventKey (Char k) Down _ _) b
     where
       -- option = getCurrOption
       curr_board = board b
-      temp_b = curr_board {pieces = []}
-      initB = b {board = temp_b, won = False, turn = White}
+      options = option b
+      initB = genWorld options
       new_b = b {board = undo curr_board, turn = other (turn b)}
 handleInput (EventKey (Char k) Up _ _) b
     = trace ("Key " ++ show k ++ " up") b

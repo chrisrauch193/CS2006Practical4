@@ -1,6 +1,15 @@
 module Board where
 import Debug.Trace
 
+data Flag = Target String
+          | Size String
+          | Colour String
+          | Help
+
+data Options = Options  { optTarget :: Int
+                        , optSize   :: Int
+                        , optColour :: Col
+                        }
 data Col = Black | White
   deriving (Show, Eq, Read)
 
@@ -53,7 +62,8 @@ initBoard = Board 19 5 []
 -- most recent moves were).
 data World = World { board :: Board,
                      turn :: Col,
-                     won :: Bool
+                     won :: Bool,
+                     option :: Options
                    }
 
 initWorld = World initBoard Black False
