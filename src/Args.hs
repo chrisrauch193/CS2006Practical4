@@ -1,5 +1,4 @@
 module Args (getOptions, genWorld) where
-
 import Board
 import System.Console.GetOpt
 import System.IO
@@ -62,4 +61,4 @@ getOptions = do args <- getArgs
                 foldl (>>=) (return startOptions) actions
 
 genWorld :: Options -> World
-genWorld options = World (Board (optSize options) (optTarget options) []) (optColour options)
+genWorld options = World (Board (optSize options) (optTarget options) []) (optColour options) False

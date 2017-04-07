@@ -4,6 +4,7 @@ import Graphics.Gloss.Interface.Pure.Game
 import Graphics.Gloss
 import Board
 import AI
+import Args
 import System.Exit (exitSuccess)
 import Debug.Trace
 
@@ -15,27 +16,37 @@ import Debug.Trace
 -- to stderr, which can be a very useful way of debugging!
 handleInput :: Event -> World -> World
 handleInput (EventMotion (x, y)) b
-    = trace ("Mouse moved to: " ++ show (x, y) ++ show(x, y)) b
+    =  b
 handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) b
-      = case getPosition (size (board b)) x y of
-          Nothing -> b
-          Just position -> case new_board of
-                            Nothing -> (b { board = current_board})
-                            Just new_board -> case winCol of
-                                              Nothing -> b {board = new_board, turn = other (turn b) }
-                                              Just col -> trace (show(col) ++  "WON") b {board = new_board, turn = other (turn b) }
-                                where
-                                  winCol = checkWon new_board
-            where
-              current_board = board b
-              new_board     = makeMove current_board (turn b) position
+      = case winCondition of
+          True -> b
+          False -> case getPosition (size (board b)) x y of
+                    Nothing -> b
+                    Just position -> case new_board of
+                                      Nothing -> (b { board = current_board})
+                                      Just new_board -> case winCol of
+                                                        Nothing -> b {board = new_board, turn = other (turn b) }
+                                                        Just col -> trace (show(col) ++  "WON") b {board = new_board, turn = other (turn b),won = True}
+                                          where
+                                            winCol = checkWon new_board
+                      where
+                        current_board = board b
+                        new_board     = makeMove current_board (turn b) position
+          where
+            winCondition = won b
 --    = trace ("Left button pressed at: " ++ show (x,y)) b
 handleInput (EventKey (Char k) Down _ _) b
     = case k of
-      'u' -> trace ("Key " ++ show k ++ " down") new_b
+      'u' -> case won b of
+                False -> trace ("Key " ++ show k ++ " down") new_b
+                True -> trace ("Can't Undo, Game Over")b
+      'n' -> initB
       otherwise -> trace ("Key " ++ show k ++ " down") b
     where
+      -- option = getCurrOption
       curr_board = board b
+      temp_b = curr_board {pieces = []}
+      initB = b {board = temp_b, won = False, turn = White}
       new_b = b {board = undo curr_board, turn = other (turn b)}
 handleInput (EventKey (Char k) Up _ _) b
     = trace ("Key " ++ show k ++ " up") b
@@ -69,3 +80,9 @@ getIndex dimension value
 -- spaceFreeCheck x y board
 --     |
 --     where
+
+-- getCurrOption :: Options
+-- getCurrOption = do
+--                   option <- getOptions
+--                   return option
+--                     --  options
