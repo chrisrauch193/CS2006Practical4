@@ -69,16 +69,20 @@ getBestMove depthAI currentTree = (fst (head (next_moves currentTree)))
 updateWorld :: Float -- ^ time since last update (you can ignore this)
             -> World -- ^ current world state
             -> World
-updateWorld t w = w
--- updateWorld t w = nextWorld -- Update World with new move. Also send t server
---     where
---         currentTree = getCurrentTree w
---         b = board w
---         t = turn w
---         next_t = other t
---         nexMovePos = getBestMove depthAI currentTree
---         nextMove = makeMove b t nexMovePos
---         nextWorld = nextMove next_t
+--rupdateWorld t w = w
+updateWorld t w
+  | colour == optionCol = w
+  | otherwise = nextWorld -- Update World with new move. Also send t server
+     where
+         optionList = option w
+         optionCol = optColour optionList
+         currentTree = getCurrentTree w
+         b = board w
+         colour = turn w
+         next_t = other colour
+         nextMovePos = getBestMove depthAI currentTree
+         Just nextMove = makeMove b colour nextMovePos
+         nextWorld = w { board = nextMove, turn = next_t}
 
 {- Hint: 'updateWorld' is where the AI gets called. If the world state
  indicates that it is a computer player's turn, updateWorld should use
