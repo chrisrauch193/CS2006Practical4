@@ -1,4 +1,4 @@
-module Input(handleInput) where
+module Input(handleInput, handleClientInput) where
 
 import Graphics.Gloss.Interface.Pure.Game
 import Graphics.Gloss
@@ -6,6 +6,7 @@ import Board
 import AI
 
 import Debug.Trace
+import Control.Concurrent.Chan
 
 -- Update the world state given an input event. Some sample input events
 -- are given; when they happen, there is a trace printed on the console
@@ -13,6 +14,22 @@ import Debug.Trace
 -- trace :: String -> a -> a
 -- 'trace' returns its second argument while printing its first argument
 -- to stderr, which can be a very useful way of debugging!
+handleClientInput :: Chan String -> Event -> World -> (World, IO ())
+handleClientInput chan (EventKey (MouseButton LeftButton) Up m (x, y)) w
+  = case getPosition (size (board w)) x y of
+          Nothing -> (w, return ())
+          Just position -> (w { board = new_board, turn = other (turn w) }, writeChan chan (show position))
+            where
+              current_board = board w
+              new_board     = current_board { pieces = (position, turn w):(pieces current_board) }
+handleClientInput _ _ w = (w, return ()) 
+--    = trace ("Left button pressed at: " ++ show (x,y)) b
+
+
+
+
+
+
 handleInput :: Event -> World -> World
 handleInput (EventMotion (x, y)) b
     = trace ("Mouse moved to: " ++ show (x, y) ++ show(x, y)) b

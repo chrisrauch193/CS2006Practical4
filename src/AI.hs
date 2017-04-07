@@ -65,6 +65,10 @@ getBestMove depthAI currentTree = (fst (head (next_moves currentTree)))
         -- | otherwise = getBestMove (depthAI - 1) (snd (head (shuffle currentTree)))
 -- traversing tree code kinda done ^^
 
+
+
+
+
 -- Update the world state after some time has passed
 updateWorld :: Float -- ^ time since last update (you can ignore this)
             -> World -- ^ current world state
@@ -79,6 +83,8 @@ updateWorld t w = w
 --         nexMovePos = getBestMove depthAI currentTree
 --         nextMove = makeMove b t nexMovePos
 --         nextWorld = nextMove next_t
+
+
 
 {- Hint: 'updateWorld' is where the AI gets called. If the world state
  indicates that it is a computer player's turn, updateWorld should use
