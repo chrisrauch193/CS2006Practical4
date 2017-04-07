@@ -47,7 +47,7 @@ data Board = Board { size :: Int,
 --             fullPiece = (show x) ++ ":" ++ (show y) ++ "=" ++ (show col)
 --         stringPieces = map (showPiece) boardPieces
 
--- Default board is 6x6, target is 3 in a row, no initial pieces
+-- Default board is 6x6, target is 3 in a row, no inital pieces
 initBoard = Board 6 3 []
 
 -- Overall state is the board and whose turn it is, plus any further
@@ -59,6 +59,7 @@ initBoard = Board 6 3 []
 -- most recent moves were).
 data World = World { board :: Board,
                      turn :: Col }
+
 
 initWorld = World initBoard Black
 
