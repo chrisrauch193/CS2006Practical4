@@ -41,11 +41,15 @@ handleInput (EventKey (Char k) Down _ _) b
                 False -> trace ("Key " ++ show k ++ " down") new_b
                 True -> trace ("Can't Undo, Game Over")b
       'n' -> initB
+      'a' -> b {option = aiOPtions}
+      'm' -> b {option  = multiPlayerOptions}
       otherwise -> trace ("Key " ++ show k ++ " down") b
     where
       -- option = getCurrOption
       curr_board = board b
       options = option b
+      aiOPtions = options {nextAI = True}
+      multiPlayerOptions = options {nextAI = False}
       initB = genWorld options
       new_b = b {board = undo curr_board, turn = other (turn b)}
 handleInput (EventKey (Char k) Up _ _) b

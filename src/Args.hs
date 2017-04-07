@@ -10,6 +10,8 @@ startOptions :: Options
 startOptions = Options { optTarget = 3
                        , optSize   = 6
                        , optColour = White
+                       , nextAI = True
+                       , ai = True
                        }
 
 options :: [ OptDescr (Options -> IO Options) ]
@@ -50,4 +52,7 @@ getOptions = do args <- getArgs
                 foldl (>>=) (return startOptions) actions
 
 genWorld :: Options -> World
-genWorld options = World (Board (optSize options) (optTarget options) []) (optColour options) False options
+genWorld options = World (Board (optSize options) (optTarget options) []) (optColour options) False nextOP
+    where
+      next = nextAI options
+      nextOP = options {ai = next}

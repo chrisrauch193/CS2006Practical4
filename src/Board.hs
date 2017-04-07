@@ -9,6 +9,8 @@ data Flag = Target String
 data Options = Options  { optTarget :: Int
                         , optSize   :: Int
                         , optColour :: Col
+                        , nextAI :: Bool
+                        , ai :: Bool
                         }
 data Col = Black | White
   deriving (Show, Eq, Read)

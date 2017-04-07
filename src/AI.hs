@@ -89,6 +89,18 @@ updateWorld t w = case won w of
                          nextWorld = w { board = nextMove, turn = next_t}
                          newBoard = board nextWorld
 
+updateWorldNoAI :: Float -- ^ time since last update (you can ignore this)
+           -> World -- ^ current world state
+           -> World
+updateWorldNoAI t w = w
+
+chooseUpdateWorld :: Float -> World -> World
+chooseUpdateWorld f w = case boolAI of
+                        False -> w
+                        True -> updateWorld f w
+                       where
+                         options = option w
+                         boolAI = ai options
 {- Hint: 'updateWorld' is where the AI gets called. If the world state
  indicates that it is a computer player's turn, updateWorld should use
  'getBestMove' to find where the computer player should play, and update

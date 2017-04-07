@@ -33,4 +33,4 @@ main = do options <- getOptions
             (genWorld options) -- in Args.hs
             drawWorld -- in Draw.hs
             handleInput -- in Input.hs
-            updateWorld -- in AI.hs
+            chooseUpdateWorld -- in AI.hs
