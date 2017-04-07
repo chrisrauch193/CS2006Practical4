@@ -1,6 +1,7 @@
 module AI where
 
 import Board
+import Debug.Trace
 import Data.Random.Extras
 
 data GameTree = GameTree { game_board :: Board,
@@ -70,19 +71,23 @@ updateWorld :: Float -- ^ time since last update (you can ignore this)
             -> World -- ^ current world state
             -> World
 --rupdateWorld t w = w
-updateWorld t w
-  | colour == optionCol = w
-  | otherwise = nextWorld -- Update World with new move. Also send t server
-     where
-         optionList = option w
-         optionCol = optColour optionList
-         currentTree = getCurrentTree w
-         b = board w
-         colour = turn w
-         next_t = other colour
-         nextMovePos = getBestMove depthAI currentTree
-         Just nextMove = makeMove b colour nextMovePos
-         nextWorld = w { board = nextMove, turn = next_t}
+updateWorld t w = case won w of
+                    True -> w
+                    False -> case checkWon newBoard of
+                              Nothing -> if colour == optionCol then w
+                                          else nextWorld -- Update World with new move. Also send t server
+                              Just col -> trace ("col: " ++ show(col) ++ " won") nextWorld {won = True}
+                     where
+                         optionList = option w
+                         optionCol = optColour optionList
+                         currentTree = getCurrentTree w
+                         b = board w
+                         colour = turn w
+                         next_t = other colour
+                         nextMovePos = getBestMove depthAI currentTree
+                         Just nextMove = makeMove b colour nextMovePos
+                         nextWorld = w { board = nextMove, turn = next_t}
+                         newBoard = board nextWorld
 
 {- Hint: 'updateWorld' is where the AI gets called. If the world state
  indicates that it is a computer player's turn, updateWorld should use
