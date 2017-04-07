@@ -32,7 +32,7 @@ handleClient startBoard (s, a) = do
   loop $ do
     line <- hGetLine h
     let boardUpdated = read line :: Board
-    putStrLn $ "Got message from client " ++ (show a) ++ ": " ++ line
+    putStrLn $ "Got message from client " ++ (show boardUpdated) ++ ": " ++ line
     hPutStrLn h ("hey bitch: you updated the board to " ++ (show boardUpdated))
 
 loop :: IO () -> IO ()
