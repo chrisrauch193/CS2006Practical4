@@ -101,7 +101,7 @@ checkFourRule board fourExist = case fourExist of
                                               otherwise -> (False, False)
   where
     list = getDirectionList board
-    condition = filter (>=4) list
+    condition = filter (\x -> x ==4) list
     listlength = length condition
 
 convert :: Maybe Board -> Board

@@ -9,7 +9,7 @@ import System.Environment
 startOptions :: Options
 startOptions = Options { optTarget = 5
                        , optSize   = 10
-                       , optColour = White
+                       , optColour = Black
                        , nextAI = True
                        , ai = True
                        }
