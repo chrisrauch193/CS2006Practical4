@@ -7,8 +7,8 @@ import System.Exit
 import System.Environment
 
 startOptions :: Options
-startOptions = Options { optTarget = 3
-                       , optSize   = 6
+startOptions = Options { optTarget = 5
+                       , optSize   = 10
                        , optColour = White
                        , nextAI = True
                        , ai = True
@@ -52,7 +52,7 @@ getOptions = do args <- getArgs
                 foldl (>>=) (return startOptions) actions
 
 genWorld :: Options -> World
-genWorld options = World (Board (optSize options) (optTarget options) []) (optColour options) False nextOP
+genWorld options = World (Board (optSize options) (optTarget options) [] False) (optColour options) False nextOP
     where
       next = nextAI options
       nextOP = options {ai = next}

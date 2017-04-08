@@ -48,7 +48,8 @@ directionList = [(0,1),(0,-1),(-1,0),(1,0),(1,1),(-1,-1),(1,-1),(-1,1)]
 
 data Board = Board { size :: Int,
                      target :: Int,
-                     pieces :: [(Position, Col)]
+                     pieces :: [(Position, Col)],
+                     fourBlack :: Bool
                    }
   deriving (Show,Eq)
 
@@ -68,7 +69,7 @@ data World = World { board :: Board,
                      option :: Options
                    }
 
-initWorld = World initBoard Black False
+-- initWorld = World initBoard Black False False
 
 -- Play a move on the board; return 'Nothing' if the move is invalid
 -- (e.g. outside the range of the board, or there is a piece already there)
@@ -79,18 +80,25 @@ makeMove board col position = case col of
                                             True -> Just new_board
                                 Black -> case extraConditions of
                                             False -> Nothing
-                                            True -> Just new_board
+                                            True -> case update of
+                                                      True -> Just (new_board{fourBlack = True})
+                                                      False -> Just new_board
                     where
                       condition = validPlace board col position == True -- && insideBoard (size board) position
                       new_board = board {pieces = ((position,col):pieces board)}
-                      extraFour = checkFourRule new_board
-                      extraConditions = condition == True && extraFour == True
+                      (extraFour,update) = checkFourRule new_board (fourBlack new_board)
+                      extraConditions = condition == True && extraFour== True
 
-checkFourRule :: Board -> Bool
-checkFourRule board
-    | length == 0 = True
-    | length == 1 = True
-    | otherwise = False
+checkFourRule :: Board -> Bool-> (Bool,Bool)
+checkFourRule board fourExist = case fourExist of
+                                  False -> case listlength of
+                                              0 -> (True,False)
+                                              1 -> (True,True)
+                                              otherwise -> (False,False)
+                                  True -> case listlength of
+                                              0 -> (True, False)
+                                              1 -> (False, False)
+                                              otherwise -> (False, False)
   where
     list = getDirectionList board
     condition = filter (>=4) list
@@ -144,7 +152,13 @@ getDirectionList board = list
       (x,y) = head (pieces board)
       allDirectionMoves = map (checkfunction x y (pieces board) 0) directionList
       allMoves = getTotal allDirectionMoves [] 0
-      list = map (subtract) allMoves
+      list = map (subtractMove) allMoves
+
+subtractMove :: Int -> Int
+subtractMove number = newNumber
+  where
+    newNumber = number -1
+
 
 getTotal :: [Int] -> [Int] -> Int-> [Int]
 getTotal individualMoves calculatedMoves directionNumber
