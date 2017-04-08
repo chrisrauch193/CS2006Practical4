@@ -73,12 +73,29 @@ initWorld = World initBoard Black False
 -- Play a move on the board; return 'Nothing' if the move is invalid
 -- (e.g. outside the range of the board, or there is a piece already there)
 makeMove :: Board -> Col -> Position -> Maybe Board
-makeMove board col position = 
-  | condition == False = Nothing
-  | condition == True  = Just (new_board)
+makeMove board col position = case col of
+                                White -> case condition of
+                                            False -> Nothing
+                                            True -> Just new_board
+                                Black -> case extraConditions of
+                                            False -> Nothing
+                                            True -> Just new_board
+                    where
+                      condition = validPlace board col position == True -- && insideBoard (size board) position
+                      new_board = board {pieces = ((position,col):pieces board)}
+                      extraFour = checkFourRule new_board
+                      extraConditions = condition == True && extraFour == True
+
+checkFourRule :: Board -> Bool
+checkFourRule board
+    | length == 0 = True
+    | length == 1 = True
+    | otherwise = False
   where
-    condition = validPlace board col position == True -- && insideBoard (size board) position
-    new_board = board {pieces = ((position,col):pieces board)}
+    list = getDirectionList board
+    condition = filter (>=4) list
+    listlength = length condition
+
 convert :: Maybe Board -> Board
 convert board =  do
                   case board of
@@ -118,9 +135,16 @@ checkWon board
   | otherwise = Just (y)
   where
     (x,y) = head (pieces board)
-    allDirectionMoves = map (checkfunction x y (pieces board) 0) directionList
-    allMoves = getTotal allDirectionMoves [] 0
+    allMoves = getDirectionList board
     condition = filter (winExist (target board)) allMoves
+
+getDirectionList :: Board -> [Int]
+getDirectionList board = list
+    where
+      (x,y) = head (pieces board)
+      allDirectionMoves = map (checkfunction x y (pieces board) 0) directionList
+      allMoves = getTotal allDirectionMoves [] 0
+      list = map (subtract) allMoves
 
 getTotal :: [Int] -> [Int] -> Int-> [Int]
 getTotal individualMoves calculatedMoves directionNumber
@@ -135,9 +159,7 @@ getTotal individualMoves calculatedMoves directionNumber
 
 
 winExist :: Int-> Int -> Bool
-winExist target listInt = listInt >= amendedTaget
-  where
-    amendedTaget = target +1
+winExist target listInt = listInt >= target
 
 checkfunction :: Position -> Col-> [(Position,Col)] -> Int-> Position-> Int
 checkfunction (xCheck,yCheck) colToCheck listOfPieces numPieces (aToAdd,bToAdd)
