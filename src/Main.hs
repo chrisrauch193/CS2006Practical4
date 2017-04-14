@@ -25,12 +25,21 @@ import System.Exit
 -- move
 
 setColor :: Color
-setColor = makeColorI 205 133 63 0
+setColor = makeColorI 255 255 255 0
+
+readBitmap :: String -> Float -> IO Picture
+readBitmap fileName size = do picture <- loadBMP fileName
+                              let xScale = size / bmpSize
+                              let yScale = size / bmpSize
+                              return (Scale xScale yScale picture)
 
 main :: IO ()
 main = do options <- getOptions
+          boardPicture <- readBitmap "./assets/board.bmp" (cellSize $ optSize options)
+          whitePicture <- readBitmap "./assets/white.bmp" (cellSize $ optSize options)
+          blackPicture <- readBitmap "./assets/black.bmp" (cellSize $ optSize options)
           play (InWindow "Gomoku" (640, 480) (10, 10)) setColor 10
             (genWorld options) -- in Args.hs
-            drawWorld -- in Draw.hs
+            (drawWorld boardPicture whitePicture blackPicture) -- in Draw.hs
             handleInput -- in Input.hs
             updateWorld -- in AI.hs
