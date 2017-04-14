@@ -2,7 +2,6 @@ module AI where
 
 import Board
 import Debug.Trace
-import Data.Random.Extras
 
 data GameTree = GameTree { game_board :: Board,
                            game_turn :: Col,

@@ -1,5 +1,4 @@
 module Board where
-import Debug.Trace
 
 data Flag = Target String
           | Size String
@@ -103,16 +102,16 @@ checkFourRule board = case listlength of
     listlength = length condition
 
 checkThreeRule :: Board-> Bool
-checkThreeRule board = case trace ("length is"++ show(listlength))listlength of
+checkThreeRule board = case listlength of
                           0 -> True
                           1 -> True
                           otherwise -> False
   where
     list = getDirectionList board
     posList = zip list upDirectionList
-    filteredList = trace ("Pos list is " ++ show(posList)) filter (checkListThree) posList
-    unboundedList = trace ("Filtered list is " ++ show(filteredList)) filter (isUnbounded (head (pieces board)) board) (snd (unzip filteredList))
-    listlength = trace ("Unbounded list is " ++ show(unboundedList)) length unboundedList
+    filteredList = filter (checkListThree) posList
+    unboundedList = filter (isUnbounded (head (pieces board)) board) (snd (unzip filteredList))
+    listlength = length unboundedList
 
 checkListThree :: (Int,Position)-> Bool
 checkListThree (checkNum,pos) = checkNum == 3
