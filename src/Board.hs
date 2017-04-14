@@ -116,7 +116,8 @@ checkFourRule board = case listlength of
                         1 -> True
                         otherwise -> False
   where
-    list = getDirectionList board
+    (x,y) = head (pieces board)
+    list = getDirectionList (x,y) board
     condition = filter (\x -> x ==4) list
     listlength = length condition
 
@@ -126,7 +127,8 @@ checkThreeRule board = case listlength of
                           1 -> True
                           otherwise -> False
   where
-    list = getDirectionList board
+    (x,y) = head (pieces board)
+    list = getDirectionList (x,y) board
     posList = zip list upDirectionList
     filteredList = filter (checkListThree) posList
     unboundedList = filter (isUnbounded (head (pieces board)) board) (snd (unzip filteredList))
@@ -209,13 +211,13 @@ checkWon board
   | otherwise = Just (y)
   where
     (x,y) = head (pieces board)
-    allCounts = getDirectionList board
+    allCounts = getDirectionList (x,y) board
     condition = filter (winExist (target board)) allCounts
 
-getDirectionList :: Board -> [Int]
-getDirectionList board = list
+getDirectionList :: (Position,Col) -> Board -> [Int]
+getDirectionList (x,y) board = list
     where
-      (x,y) = head (pieces board)
+      -- (x,y) = head (pieces board)
       allDirectionMoves = map (checkfunction x y (pieces board) 0) directionList
       allCounts = getTotal allDirectionMoves [] 0
       list = map (subtractMove) allCounts
