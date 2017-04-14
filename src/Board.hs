@@ -53,7 +53,7 @@ data Board = Board { size :: Int,
   deriving (Show,Eq, Read)
 
 -- Default board is 6x6, target is 3 in a row, no initial pieces
-initBoard = Board 19 5 []
+initBoard = Board 19 5 [((5, 5), Black)]
 
 -- Overall state is the board and whose turn it is, plus any further
 -- information about the world (this may later include, for example, player

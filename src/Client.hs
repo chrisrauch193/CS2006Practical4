@@ -1,4 +1,4 @@
-module Client  where
+module Main  where
 import Control.Concurrent.STM.TVar
 import Control.Monad.STM
 
@@ -87,6 +87,7 @@ gameplayClientLoop currentWorld chan (s, _) = do
   loop $ do
     putStrLn "HERE FAM2"
     msgType <- hGetLine h
+    putStrLn "MEOW"
     case msgType of
       "S_UPDATE_BOARD" -> do
         putStrLn "HERE FAM3"
