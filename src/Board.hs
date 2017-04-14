@@ -73,7 +73,7 @@ initWorld = World initBoard Black False
 -- Play a move on the board; return 'Nothing' if the move is invalid
 -- (e.g. outside the range of the board, or there is a piece already there)
 makeMove :: Board -> Col -> Position -> Maybe Board
-makeMove board col position = 
+makeMove board col position
   | condition == False = Nothing
   | condition == True  = Just (new_board)
   where
