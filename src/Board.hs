@@ -38,6 +38,8 @@ pieceRadius = 10
 directionList :: [Position]
 directionList = [(0,1),(0,-1),(-1,0),(1,0),(1,1),(-1,-1),(1,-1),(-1,1)]
 
+upDirectionList :: [Position]
+upDirectionList = [(0,1),(1,0),(1,1),(-1,1)]
 -- A Board is a record containing the board size (a board is a square grid,
 -- n * n), the number of pieces in a row required to win, and a list
 -- of pairs of position and the colour at that position.  So a 10x10 board
@@ -48,8 +50,7 @@ directionList = [(0,1),(0,-1),(-1,0),(1,0),(1,1),(-1,-1),(1,-1),(-1,1)]
 
 data Board = Board { size :: Int,
                      target :: Int,
-                     pieces :: [(Position, Col)],
-                     fourBlack :: Bool
+                     pieces :: [(Position, Col)]
                    }
   deriving (Show,Eq)
 
@@ -80,56 +81,100 @@ makeMove board col position = case col of
                                             True -> Just new_board
                                 Black -> case extraConditions of
                                             False -> Nothing
-                                            True -> case update of
-                                                      True -> Just (new_board{fourBlack = True})
-                                                      False -> Just new_board
+                                            True -> Just new_board
                     where
-                      condition = validPlace board col position == True -- && insideBoard (size board) position
+                      condition = validPlace board position == True -- && insideBoard (size board) position
                       new_board = board {pieces = ((position,col):pieces board)}
-                      (extraFour,update) = checkFourRule new_board (fourBlack new_board)
-                      extraConditions = condition == True && extraFour== True
+                      extraFour = checkFourRule new_board
+                      extraThree = checkThreeRule new_board
+                      extraConditions = extraThree == True && extraFour== True && condition == True
 
-checkFourRule :: Board -> Bool-> (Bool,Bool)
-checkFourRule board fourExist = case fourExist of
-                                  False -> case listlength of
-                                              0 -> (True,False)
-                                              1 -> (True,True)
-                                              otherwise -> (False,False)
-                                  True -> case listlength of
-                                              0 -> (True, False)
-                                              1 -> (False, False)
-                                              otherwise -> (False, False)
+checkFourRule :: Board -> Bool
+checkFourRule board = case listlength of
+                        0 -> True
+                        1 -> True
+                        otherwise -> False
   where
     list = getDirectionList board
     condition = filter (\x -> x ==4) list
     listlength = length condition
+
+checkThreeRule :: Board-> Bool
+checkThreeRule board = case trace ("length is"++ show(listlength))listlength of
+                          0 -> True
+                          1 -> True
+                          otherwise -> False
+  where
+    list = getDirectionList board
+    posList = zip list upDirectionList
+    filteredList = trace ("Pos list is " ++ show(posList)) filter (checkListThree) posList
+    unboundedList = trace ("Filtered list is " ++ show(filteredList)) filter (isUnbounded (head (pieces board)) board) (snd (unzip filteredList))
+    listlength = trace ("Unbounded list is " ++ show(unboundedList)) length unboundedList
+
+checkListThree :: (Int,Position)-> Bool
+checkListThree (checkNum,pos) = checkNum == 3
+
+isUnbounded :: (Position,Col) -> Board->Position ->  Bool
+isUnbounded ((posX,posY),col) board (directionX,directionY) = case outLimits of
+                                                                  True -> False
+                                                                  False -> case emptySpace of
+                                                                            [] -> True
+                                                                            otherwise -> False
+                                                                  where
+                                                                    piecesBoard = pieces board
+                                                                    (startX,startY) = getBottom (posX,posY) col (directionX,directionY) piecesBoard
+                                                                    boardSize = size board
+                                                                    outLimits = (checkOutLimit startX directionX boardSize) || (checkOutLimit startY directionY boardSize)
+                                                                    checkUnderneath = filter (matchPos (startX - directionX,startY - directionY)) piecesBoard
+                                                                    checkAbove = filter (matchPos (startX + (3 * directionX),startY - (3 * directionY))) piecesBoard
+                                                                    emptySpace = concat [checkAbove,checkUnderneath]
+
+checkOutLimit :: Int -> Int -> Int -> Bool
+checkOutLimit numToCheck dirToCheck size = ((numToCheck - dirToCheck) < 1) || ((numToCheck + (3 * dirToCheck)) > size)
+
+getBottom :: Position -> Col -> Position-> [(Position,Col)]-> Position
+getBottom (posx,posy) col (dirx,diry) listOfPieces = case condition of
+                                                        [] -> (posx,posy)
+                                                        otherwise -> getBottom newpos col (dirx,diry) listOfPieces
+                                  where
+                                    newpos = ((posx-dirx),(posy-diry))
+                                    condition = filter (matchPiece (newpos,col)) listOfPieces
 
 convert :: Maybe Board -> Board
 convert board =  do
                   case board of
                     Just board -> board
 
-undo :: Board -> Board
-undo board
-  | pieces board == [] = board
-  | otherwise  = new_board
+undo :: World -> World
+undo world = case optionAI of
+              True -> case pieceList of
+                        [] -> world
+                        otherwise -> world {board = aiBoard}
+              False -> case pieceList of
+                        [] -> world
+                        otherwise -> world {board = multiPlayerBoard, turn = other (turn world)}
   where
-    new_board = board {pieces = tail (pieces board)}
+    options = option world
+    optionAI = ai options
+    currBoard = board world
+    pieceList = pieces currBoard
+    aiBoard = currBoard {pieces = tail (tail(pieceList))}
+    multiPlayerBoard = currBoard {pieces = tail(pieceList)}
 
-validPlace :: Board -> Col->Position -> Bool
-validPlace board col position
+validPlace :: Board->Position -> Bool
+validPlace board position
   | condition == [] = True
   | otherwise = False
   where
-    condition = filter (matchPos (position,col)) (pieces board)
+    condition = filter (matchPos position) (pieces board)
 
-matchPos :: (Position,Col)-> (Position,Col) -> Bool
-matchPos (pos,col) (checkPos,checkCol) = pos == checkPos
+matchPos :: Position-> (Position,Col) -> Bool
+matchPos pos (checkPos,checkCol) = pos == checkPos
 
 matchPiece :: (Position,Col) -> (Position,Col) -> Bool
 matchPiece (pos,col) (checkPos,checkCol) = condition
   where
-    condition = matchPos (pos,col) (checkPos,checkCol) == True && col == checkCol
+    condition = matchPos pos (checkPos,checkCol) == True && col == checkCol
 
 -- insideBoard :: Int -> Position -> Bool
 -- insideBoard dimension (x,y) = (elem x valid) && (elem y valid)
@@ -143,16 +188,16 @@ checkWon board
   | otherwise = Just (y)
   where
     (x,y) = head (pieces board)
-    allMoves = getDirectionList board
-    condition = filter (winExist (target board)) allMoves
+    allCounts = getDirectionList board
+    condition = filter (winExist (target board)) allCounts
 
 getDirectionList :: Board -> [Int]
 getDirectionList board = list
     where
       (x,y) = head (pieces board)
       allDirectionMoves = map (checkfunction x y (pieces board) 0) directionList
-      allMoves = getTotal allDirectionMoves [] 0
-      list = map (subtractMove) allMoves
+      allCounts = getTotal allDirectionMoves [] 0
+      list = map (subtractMove) allCounts
 
 subtractMove :: Int -> Int
 subtractMove number = newNumber
@@ -173,7 +218,7 @@ getTotal individualMoves calculatedMoves directionNumber
 
 
 winExist :: Int-> Int -> Bool
-winExist target listInt = listInt >= target
+winExist target listInt = listInt == target
 
 checkfunction :: Position -> Col-> [(Position,Col)] -> Int-> Position-> Int
 checkfunction (xCheck,yCheck) colToCheck listOfPieces numPieces (aToAdd,bToAdd)

@@ -38,7 +38,7 @@ handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) b
 handleInput (EventKey (Char k) Down _ _) b
     = case k of
       'u' -> case won b of
-                False -> trace ("Key " ++ show k ++ " down") new_b
+                False -> trace ("Key " ++ show k ++ " down") undoWorld
                 True -> trace ("Can't Undo, Game Over")b
       'n' -> initB
       'a' -> b {option = aiOPtions}
@@ -51,7 +51,8 @@ handleInput (EventKey (Char k) Down _ _) b
       aiOPtions = options {nextAI = True}
       multiPlayerOptions = options {nextAI = False}
       initB = genWorld options
-      new_b = b {board = undo curr_board, turn = other (turn b)}
+      undoWorld = undo b
+      -- new_b = b {undoWorld, turn = other (turn b)}
 handleInput (EventKey (Char k) Up _ _) b
     = trace ("Key " ++ show k ++ " up") b
 -- handleInput
