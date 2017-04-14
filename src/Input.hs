@@ -25,8 +25,8 @@ handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) b
                     Just position -> case new_board of
                                       Nothing -> (b { board = current_board})
                                       Just new_board -> case winCol of
-                                                        Nothing -> b {board = new_board, turn = other (turn b) }
-                                                        Just col -> trace (show(col) ++  "WON") b {board = new_board, turn = other (turn b),won = True}
+                                                        Nothing -> b {board = new_board, turn = other (turn b), timeElapsed = 0 }
+                                                        Just col -> trace (show(col) ++  "WON") b {board = new_board, turn = other (turn b), won = True}
                                           where
                                             winCol = checkWon new_board
                       where
@@ -43,6 +43,7 @@ handleInput (EventKey (Char k) Down _ _) b
       'n' -> initB
       'a' -> b {option = aiOPtions}
       'm' -> b {option  = multiPlayerOptions}
+      'p' -> b { paused = not (paused b) }
       otherwise -> trace ("Key " ++ show k ++ " down") b
     where
       -- option = getCurrOption

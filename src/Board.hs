@@ -25,6 +25,12 @@ type Coordinate = (Float, Float)
 gridSize :: Float
 gridSize = 480
 
+updateRate :: Int
+updateRate = 10
+
+getTime :: Int -> Float
+getTime updates = (1 / fromIntegral updateRate) * fromIntegral updates
+
 halfSize :: Float
 halfSize = gridSize / 2
 
@@ -42,6 +48,9 @@ turnOffset = (-85, halfSize + 30)
 
 textOffset :: Coordinate
 textOffset = (-50, halfSize + 20)
+
+timeOffset :: Coordinate
+timeOffset = (-100, -halfSize - 40)
 
 textScale :: Float
 textScale = 0.2
@@ -78,7 +87,9 @@ initBoard = Board 19 5 []
 data World = World { board :: Board
                    , turn :: Col
                    , won :: Bool
-                   , option :: Options }
+                   , option :: Options
+                   , timeElapsed :: Float
+                   , paused :: Bool }
 
 -- initWorld = World initBoard Black False False
 

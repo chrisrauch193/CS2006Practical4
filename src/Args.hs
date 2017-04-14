@@ -53,7 +53,7 @@ getOptions = do args <- getArgs
                 foldl (>>=) (return startOptions) actions
 
 genWorld :: Options -> World
-genWorld options = World (Board (optSize options) (optTarget options) []) (optColour options) False nextOP
+genWorld options = World (Board (optSize options) (optTarget options) []) (optColour options) False nextOP 0 False
     where
       next = nextAI options
       nextOP = options {ai = next}

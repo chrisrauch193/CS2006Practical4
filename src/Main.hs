@@ -38,7 +38,7 @@ main = do options <- getOptions
           boardPicture <- readBitmap "./assets/board.bmp" (cellSize $ optSize options)
           whitePicture <- readBitmap "./assets/white.bmp" (cellSize $ optSize options)
           blackPicture <- readBitmap "./assets/black.bmp" (cellSize $ optSize options)
-          play (InWindow "Gomoku" (640, 480) (10, 10)) setColour 10
+          play (InWindow "Gomoku" (640, 480) (10, 10)) setColour updateRate
             (genWorld options) -- in Args.hs
             (drawWorld boardPicture whitePicture blackPicture) -- in Draw.hs
             handleInput -- in Input.hs

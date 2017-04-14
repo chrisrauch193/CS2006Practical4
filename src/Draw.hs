@@ -11,16 +11,20 @@ import Board
 -- as a grid plus pieces.
 drawWorld :: Picture -> Picture -> Picture -> World -> Picture
 drawWorld boardPicture whitePicture blackPicture world
-  = pictures [ drawSquares boardPicture dimension boards
-             , drawSquares whitePicture dimension whites
-             , drawSquares blackPicture dimension blacks
-             , Color black $ drawGrid dimension
-             , drawTurn (turn world) ]
+  = pictures (bottom ++ middle ++ top)
                where
                  dimension = size (board world)
                  boards = [ (i, j) | i <- [1 .. dimension], j <- [1 .. dimension] ]
                  whites = getPositions (pieces (board world)) White
                  blacks = getPositions (pieces (board world)) Black
+                 bottom = [ drawSquares boardPicture dimension boards ]
+                 middle = if paused world
+                            then []
+                            else [ drawSquares whitePicture dimension whites
+                                 , drawSquares blackPicture dimension blacks ]
+                 top    = [ Color black $ drawGrid dimension
+                          , drawTurn (turn world)
+                          , drawTime (timeElapsed world) ]
 
 drawBoard :: Picture -> Picture
 drawBoard boardPicture = undefined
@@ -61,3 +65,9 @@ drawTurn colour = pictures [ translate a b turnPicture
                                glossColour = if colour == White then white else black
                                turnPicture = Color glossColour $ circleSolid pieceRadius
                                scaledText = Scale textScale textScale $ Text "to play next."
+
+drawTime :: Float -> Picture
+drawTime timeElapsed = translate a b scaledText
+                         where
+                           (a, b) = timeOffset
+                           scaledText = Scale textScale textScale $ Text ("Time elapsed: " ++ show (round timeElapsed))

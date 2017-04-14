@@ -73,7 +73,7 @@ updateWorld :: Float -- ^ time since last update (you can ignore this)
 updateWorld t w = case won w of
                     True -> w
                     False -> case checkWon newBoard of
-                              Nothing -> if colour == optionCol then w
+                              Nothing -> if colour == optionCol then w { timeElapsed = newTime }
                                           else nextWorld -- Update World with new move. Also send t server
                               Just col -> trace ("col: " ++ show(col) ++ " won") nextWorld {won = True}
                      where
@@ -85,18 +85,19 @@ updateWorld t w = case won w of
                          next_t = other colour
                          nextMovePos = getBestMove depthAI currentTree
                          Just nextMove = makeMove b colour nextMovePos
-                         nextWorld = w { board = nextMove, turn = next_t}
+                         newTime = if paused w then timeElapsed w else timeElapsed w + t
+                         nextWorld = w { board = nextMove, turn = next_t, timeElapsed = newTime }
                          newBoard = board nextWorld
 
 updateWorldNoAI :: Float -- ^ time since last update (you can ignore this)
            -> World -- ^ current world state
            -> World
-updateWorldNoAI t w = w
+updateWorldNoAI t w = w { timeElapsed = timeElapsed w + t }
 
 chooseUpdateWorld :: Float -> World -> World
-chooseUpdateWorld f w = case boolAI of
-                        False -> w
-                        True -> updateWorld f w
+chooseUpdateWorld t w = case boolAI of
+                        False -> w { timeElapsed = timeElapsed w + t }
+                        True -> updateWorld t w
                        where
                          options = option w
                          boolAI = ai options
