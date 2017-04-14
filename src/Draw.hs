@@ -9,18 +9,24 @@ import Board
 --
 -- This will need to extract the Board from the world state and draw it
 -- as a grid plus pieces.
-drawWorld :: World -> Picture
-drawWorld world = pictures [Color black $ drawGrid dimension,
-                            Color white $ drawPieces dimension whites,
-                            Color black $ drawPieces dimension blacks]
-                    where
-                      dimension = size (board world)
-                      whites = getPositions (pieces (board world)) White
-                      blacks = getPositions (pieces (board world)) Black
+drawWorld :: Picture -> Picture -> Picture -> World -> Picture
+drawWorld boardPicture whitePicture blackPicture world
+  = pictures [ drawSquares boardPicture dimension boards
+             , drawSquares whitePicture dimension whites
+             , drawSquares blackPicture dimension blacks
+             , Color black $ drawGrid dimension ]
+               where
+                 dimension = size (board world)
+                 boards = [ (i, j) | i <- [1 .. dimension], j <- [1 .. dimension] ]
+                 whites = getPositions (pieces (board world)) White
+                 blacks = getPositions (pieces (board world)) Black
+
+drawBoard :: Picture -> Picture
+drawBoard boardPicture = undefined
 
 getPositions :: [(Position, Col)] -> Col -> [Position]
 getPositions [] _ = []
-getPositions ((p, c):remain) check = if c == check then p:(getPositions remain check) else getPositions remain check
+getPositions ((p, c):remain) check = if c == check then p : getPositions remain check else getPositions remain check
 
 drawLines :: Int -> Coordinate -> Coordinate -> Coordinate -> Picture
 drawLines dimension (a, b) (c, d) (x, y) = pictures [line [(a + x * i, b + y * i), (c + x * i, d + y * i)] | i <- [0 .. fromIntegral dimension]]
@@ -30,11 +36,11 @@ drawGrid dimension = pictures [drawLines dimension (-halfSize, -halfSize) (halfS
                        where
                          cell = cellSize dimension
 
-drawPieces :: Int -> [Position] -> Picture
-drawPieces dimension pieces = pictures (map (drawPiece dimension) pieces)
+drawSquares :: Picture -> Int -> [Position] -> Picture
+drawSquares squarePicture dimension positions = pictures (map (drawSquare squarePicture dimension) positions)
 
-drawPiece :: Int -> Position -> Picture
-drawPiece dimension position = translate x y (circleSolid pieceRadius)
+drawSquare :: Picture -> Int -> Position -> Picture
+drawSquare squarePicture dimension position = translate x y squarePicture
                                  where
                                    (x, y) = getCoordinate dimension position
 

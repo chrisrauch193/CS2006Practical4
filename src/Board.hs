@@ -35,6 +35,9 @@ cellSize dimension = gridSize / fromIntegral dimension
 pieceRadius :: Float
 pieceRadius = 10
 
+bmpSize :: Float
+bmpSize = 50
+
 directionList :: [Position]
 directionList = [(0,1),(0,-1),(-1,0),(1,0),(1,1),(-1,-1),(1,-1),(-1,1)]
 
