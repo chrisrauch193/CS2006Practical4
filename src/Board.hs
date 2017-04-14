@@ -37,6 +37,15 @@ pieceRadius = 10
 bmpSize :: Float
 bmpSize = 50
 
+turnOffset :: Coordinate
+turnOffset = (-85, halfSize + 30)
+
+textOffset :: Coordinate
+textOffset = (-50, halfSize + 20)
+
+textScale :: Float
+textScale = 0.2
+
 directionList :: [Position]
 directionList = [(0,1),(0,-1),(-1,0),(1,0),(1,1),(-1,-1),(1,-1),(-1,1)]
 
@@ -66,11 +75,10 @@ initBoard = Board 19 5 []
 -- Feel free to extend this, and 'Board' above with anything you think
 -- will be useful (information for the AI, for example, such as where the
 -- most recent moves were).
-data World = World { board :: Board,
-                     turn :: Col,
-                     won :: Bool,
-                     option :: Options
-                   }
+data World = World { board :: Board
+                   , turn :: Col
+                   , won :: Bool
+                   , option :: Options }
 
 -- initWorld = World initBoard Black False False
 

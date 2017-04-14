@@ -24,8 +24,8 @@ import System.Exit
 -- and, if it is an AI's turn, should update the board with an AI generated
 -- move
 
-setColor :: Color
-setColor = makeColorI 255 255 255 0
+setColour :: Color
+setColour = makeColorI 100 100 100 0
 
 readBitmap :: String -> Float -> IO Picture
 readBitmap fileName size = do picture <- loadBMP fileName
@@ -38,7 +38,7 @@ main = do options <- getOptions
           boardPicture <- readBitmap "./assets/board.bmp" (cellSize $ optSize options)
           whitePicture <- readBitmap "./assets/white.bmp" (cellSize $ optSize options)
           blackPicture <- readBitmap "./assets/black.bmp" (cellSize $ optSize options)
-          play (InWindow "Gomoku" (640, 480) (10, 10)) setColor 10
+          play (InWindow "Gomoku" (640, 480) (10, 10)) setColour 10
             (genWorld options) -- in Args.hs
             (drawWorld boardPicture whitePicture blackPicture) -- in Draw.hs
             handleInput -- in Input.hs
