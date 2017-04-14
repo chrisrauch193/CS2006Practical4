@@ -71,7 +71,7 @@ getBestMove :: Int -- ^ Maximum search depth
 getBestMove depth currentTree = fst bestMoveTuple
   where
     bestMoveTuple = minimax currentTree depth
-    
+
 --getBestMove depthAI currentTree = (fst (head (next_moves currentTree)))
         -- | depthAI == 0 = (fst (head (shuffle currentTree)))
         -- | otherwise = getBestMove (depthAI - 1) (snd (head (shuffle currentTree)))
@@ -84,12 +84,10 @@ updateWorld :: Float -- ^ time since last update (you can ignore this)
 --rupdateWorld t w = w
 updateWorld t w = case won w of
                     True -> w
-                    False -> case nextMove of
-                              Nothing -> w
-                              Just move -> case checkWon move of
-                                             Nothing -> if colour == optionCol then w
-                                                        else nextWorld{board = move} -- Update World with new move. Also send t server
-                                             Just col -> trace ("col: " ++ show(col) ++ " won") nextWorld {won = True}
+                    False -> case checkWon moveBoard of
+                               Nothing -> if colour == optionCol then w
+                                          else nextWorld -- Update World with new move. Also send t server
+                               Just col -> trace ("col: " ++ show(col) ++ " won") nextWorld {won = True}
                      where
                          optionList = option w
                          optionCol = optColour optionList
@@ -98,8 +96,8 @@ updateWorld t w = case won w of
                          colour = turn w
                          next_t = other colour
                          nextMovePos = getBestMove depthAI currentTree
-                         nextMove = makeMove b colour nextMovePos
-                         nextWorld = w {turn = next_t}
+                         moveBoard = makeAIMove b colour nextMovePos
+                         nextWorld = w {board = moveBoard, turn = next_t}
                          --newBoard = board nextWorld
 
 updateWorldNoAI :: Float -- ^ time since last update (you can ignore this)
@@ -132,17 +130,17 @@ chooseUpdateWorld f w = case boolAI of
 minimax :: GameTree -> Int -> (Position, Int)
 minimax currentTree depth
   | depth == 0 = evaluateBoard (game_board currentTree)
-  | maxPlayer = maxMove (next_moves currentTree) depth 
-  | otherwise = minMove (next_moves currentTree) depth 
+  | maxPlayer = maxMove (next_moves currentTree) depth
+  | otherwise = minMove (next_moves currentTree) depth
   where
     maxPlayer = (game_turn currentTree) == Black
 
-maxMove :: [(Position, GameTree)] -> Int -> (Position, Int)  
+maxMove :: [(Position, GameTree)] -> Int -> (Position, Int)
 maxMove [x] depth = minimax nextTree (depth - 1)
   where
     xBoard = game_board (snd x)
     nextTree = snd x
-maxMove (x:xs) depth   
+maxMove (x:xs) depth
     | xBoardScore > maxTail = ((fst x), (snd xBoardScore))
     | otherwise = maxTail
     where
@@ -151,12 +149,12 @@ maxMove (x:xs) depth
       nextTree = snd x
       xBoardScore = minimax nextTree (depth - 1)
 
-minMove :: [(Position, GameTree)] -> Int -> (Position, Int)  
+minMove :: [(Position, GameTree)] -> Int -> (Position, Int)
 minMove [x] depth = minimax nextTree (depth - 1)
   where
     xBoard = game_board (snd x)
     nextTree = snd x
-minMove (x:xs) depth   
+minMove (x:xs) depth
     | xBoardScore < maxTail = ((fst x), (snd xBoardScore))
     | otherwise = maxTail
     where
@@ -168,7 +166,7 @@ minMove (x:xs) depth
 -- maximisingPlayer :: GameTree -> Int -> (Position, Int)
 -- maximisingPlayer = do
 --   let bestMove = minBound :: Int
-  
+
 
 evaluateBoard :: Board -> (Position, Int)
 evaluateBoard leafBoard = ((1, 1), 1)

@@ -84,6 +84,9 @@ convert board =  do
                   case board of
                     Just board -> board
 
+makeAIMove :: Board -> Col -> Position -> Board
+makeAIMove board col pos = board{pieces = ((pos,col):pieces board)}
+
 undo :: Board -> Board
 undo board
   | pieces board == [] = board
