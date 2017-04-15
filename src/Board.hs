@@ -163,10 +163,6 @@ getBottom (posx,posy) col (dirx,diry) listOfPieces = case condition of
                                     newpos = ((posx-dirx),(posy-diry))
                                     condition = filter (matchPiece (newpos,col)) listOfPieces
 
-convert :: Maybe Board -> Board
-convert board =  do
-                  case board of
-                    Just board -> board
 
 undo :: World -> World
 undo world = case optionAI of
@@ -183,6 +179,9 @@ undo world = case optionAI of
     pieceList = pieces currBoard
     aiBoard = currBoard {pieces = tail (tail(pieceList))}
     multiPlayerBoard = currBoard {pieces = tail(pieceList)}
+
+makeAIMove :: Board -> Col -> Position -> Board
+makeAIMove board col pos = board{pieces = ((pos,col):pieces board)}
 
 validPlace :: Board->Position -> Bool
 validPlace board position
