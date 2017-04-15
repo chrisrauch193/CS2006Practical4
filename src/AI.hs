@@ -129,11 +129,13 @@ chooseUpdateWorld t w = case boolAI of
 
 minimax :: GameTree -> Int -> (Position, Int)
 minimax currentTree depth
-  | depth == 0 = evaluateBoard (game_board currentTree)
+  | depth == 0 = (lastPiece, evaluateBoard (game_board currentTree))
   | maxPlayer = maxMove (next_moves currentTree) depth
   | otherwise = minMove (next_moves currentTree) depth
   where
     maxPlayer = (game_turn currentTree) == Black
+    currentBoard = game_board currentTree
+    lastPiece = fst (last (pieces currentBoard))
 
 maxMove :: [(Position, GameTree)] -> Int -> (Position, Int)
 maxMove [x] depth = minimax nextTree (depth - 1)
@@ -168,5 +170,24 @@ minMove (x:xs) depth
 --   let bestMove = minBound :: Int
 
 
-evaluateBoard :: Board -> (Position, Int)
-evaluateBoard leafBoard = ((1, 1), 1)
+evaluateBoard :: Board -> Int
+evaluateBoard leafBoard = trace (show(sum(finalScoreList))) (sum(finalScoreList))
+  where
+    initScore = 0 :: Int
+    pieceLineCountList = map (\(pos, col) -> sum(getDirectionList (pos, col) leafBoard)) (pieces leafBoard)
+    pieceColourList = map (\(pos, col) -> col) (pieces leafBoard)
+    pieceScoreList = zip pieceColourList pieceLineCountList
+    finalScoreList = map (\(col, score) -> calculateLineScore col score) pieceScoreList
+
+calculateLineScore :: Col -> Int -> Int
+calculateLineScore col numLines
+  | col == Black = 4 ^ numLines
+  | otherwise = (4 ^ numLines) * (-2)
+
+getDirectionListNotBlocked :: (Position,Col) -> Board -> [Int]
+getDirectionListNotBlocked (x,y) board = list
+    where
+      -- (x,y) = head (pieces board)
+      allDirectionMoves = map (checkfunction x y (pieces board) 0) directionList
+      allCounts = getTotal allDirectionMoves [] 0
+      list = map (subtractMove) allCounts
