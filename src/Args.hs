@@ -9,11 +9,14 @@ import System.Environment
 
 startOptions :: Options
 startOptions = Options { optTarget = 5
-                       , optSize   = 10
+                       , optSize   = 19
                        , optColour = Black
                        , nextAI = True
                        , ai = True
                        }
+
+testBoard = Board 19 5 [((5,5), Black), ((5,4), Black), ((5,3), Black), ((5,2), Black), ((5,1), Black)]
+testWorld = World testBoard White False startOptions 0 False
 
 options :: [ OptDescr (Options -> IO Options) ]
 options =

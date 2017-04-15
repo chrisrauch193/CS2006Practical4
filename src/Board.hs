@@ -11,6 +11,7 @@ data Options = Options  { optTarget :: Int
                         , nextAI :: Bool
                         , ai :: Bool
                         }
+  deriving (Show)
 data Col = Black | White
   deriving (Show, Eq, Read)
 
@@ -77,6 +78,15 @@ data Board = Board { size :: Int,
 -- Default board is 6x6, target is 3 in a row, no initial pieces
 initBoard = Board 19 5 []
 
+testOptions = Options { optTarget = 5
+                       , optSize   = 10
+                       , optColour = Black
+                       , nextAI = True
+                       , ai = True
+                       }
+
+
+
 -- Overall state is the board and whose turn it is, plus any further
 -- information about the world (this may later include, for example, player
 -- names, timers, information about rule variants, etc)
@@ -90,7 +100,7 @@ data World = World { board :: Board
                    , option :: Options
                    , timeElapsed :: Float
                    , paused :: Bool }
-
+  deriving (Show)
 -- initWorld = World initBoard Black False False
 
 -- Play a move on the board; return 'Nothing' if the move is invalid
@@ -219,12 +229,7 @@ getDirectionList (x,y) board = list
       -- (x,y) = head (pieces board)
       allDirectionMoves = map (checkfunction x y (pieces board) 0) directionList
       allCounts = getTotal allDirectionMoves [] 0
-      list = map (subtractMove) allCounts
-
-subtractMove :: Int -> Int
-subtractMove number = newNumber
-  where
-    newNumber = number -1
+      list = map (subtract 1) allCounts
 
 
 getTotal :: [Int] -> [Int] -> Int-> [Int]
