@@ -1,5 +1,6 @@
 module Args where
 
+--module Args (getOptions, genWorld) where
 import Board
 import System.Console.GetOpt
 import System.IO

@@ -1,4 +1,5 @@
 module Board where
+import Debug.Trace
 
 data Flag = Target String
           | Size String
@@ -12,6 +13,7 @@ data Options = Options  { optTarget :: Int
                         , ai :: Bool
                         }
   deriving (Show)
+
 data Col = Black | White
   deriving (Show, Eq, Read)
 
@@ -61,6 +63,7 @@ directionList = [(0,1),(0,-1),(-1,0),(1,0),(1,1),(-1,-1),(1,-1),(-1,1)]
 
 upDirectionList :: [Position]
 upDirectionList = [(0,1),(1,0),(1,1),(-1,1)]
+
 -- A Board is a record containing the board size (a board is a square grid,
 -- n * n), the number of pieces in a row required to win, and a list
 -- of pairs of position and the colour at that position.  So a 10x10 board
@@ -73,19 +76,10 @@ data Board = Board { size :: Int,
                      target :: Int,
                      pieces :: [(Position, Col)]
                    }
-  deriving (Show,Eq)
+  deriving (Show,Eq, Read)
 
 -- Default board is 6x6, target is 3 in a row, no initial pieces
-initBoard = Board 19 5 []
-
-testOptions = Options { optTarget = 5
-                       , optSize   = 10
-                       , optColour = Black
-                       , nextAI = True
-                       , ai = True
-                       }
-
-
+initBoard = Board 19 5 [((5, 5), Black)]
 
 -- Overall state is the board and whose turn it is, plus any further
 -- information about the world (this may later include, for example, player
@@ -101,7 +95,7 @@ data World = World { board :: Board
                    , timeElapsed :: Float
                    , paused :: Bool }
   deriving (Show)
--- initWorld = World initBoard Black False False
+
 
 -- Play a move on the board; return 'Nothing' if the move is invalid
 -- (e.g. outside the range of the board, or there is a piece already there)
@@ -216,6 +210,7 @@ matchPiece (pos,col) (checkPos,checkCol) = condition
 -- Returns 'Just c' if the player 'c' has won
 checkWon :: Board -> Maybe Col
 checkWon board
+  | (pieces board) == [] = Nothing
   | condition == [] = Nothing
   | otherwise = Just (y)
   where
@@ -230,7 +225,6 @@ getDirectionList (x,y) board = list
       allDirectionMoves = map (checkfunction x y (pieces board) 0) directionList
       allCounts = getTotal allDirectionMoves [] 0
       list = map (subtract 1) allCounts
-
 
 getTotal :: [Int] -> [Int] -> Int-> [Int]
 getTotal individualMoves calculatedMoves directionNumber
