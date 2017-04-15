@@ -81,8 +81,10 @@ getBestMove meowdepth currentTree = fst bestMoveTuple
         -- | otherwise = getBestMove (depthAI - 1) (snd (head (shuffle currentTree)))
 -- traversing tree code kinda done ^^
 
-
-
+updateMultiplayerWorld :: Float -- ^ time since last update (you can ignore this)
+            -> World -- ^ current world state
+            -> World
+updateMultiplayerWorld t w = w
 
 
 -- Update the world state after some time has passed

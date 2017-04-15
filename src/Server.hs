@@ -18,7 +18,7 @@ import Args
 main :: IO ()
 main = do
   os <- getOptions
-  let w1 = (initWorld os)
+  let w1 = (genWorld os)
   let w2 = w1 { board = (board w1) { target = 2} }
   serverWorld <- newTVarIO w2
   playerCount <- newTVarIO 0
@@ -28,6 +28,8 @@ main = do
 handleClient :: TVar World -> TVar Int -> Chan World -> (Socket, SockAddr) -> IO ()
 handleClient startBoard playerCount chan (s, _) = do
   h <- socketToHandle s ReadWriteMode
+  connectMessage <- hGetLine h
+  putStrLn connectMessage
   
   nextColour <- atomically $ do
     curPlayerCount <- readTVar playerCount
@@ -37,9 +39,11 @@ handleClient startBoard playerCount chan (s, _) = do
   case nextColour of
     Nothing -> do
       hPutStrLn h "S_REFUSE"
+      putStrLn "SENDING S_REFUSE"
       return ()
     Just col -> do
       hPutStrLn h "S_ACCEPT"
+      putStrLn "SENDING S_ACCEPT"
       hPrint h col
       
       clientChan <- dupChan chan
@@ -50,21 +54,27 @@ handleClient startBoard playerCount chan (s, _) = do
           nextWorld <- input
           
           hPutStrLn h "S_UPDATE_BOARD"
+          putStrLn "SENDING UPDATE_BOARD"
           hPrint h  $ board nextWorld
 
           case checkWon (board nextWorld) of
             Just wonCol -> do
               hPutStrLn h "S_GAME_WON"
+              putStrLn "SENDING GAME_WON"
               hPrint h wonCol
             Nothing -> if (turn nextWorld) == col then do
               hPutStrLn h "S_START_MOVE"
+              putStrLn "SENDING START_MOVE"
               msgType <- hGetLine h
               case msgType of
                 "C_MAKE_MOVE" -> do
+                  putStrLn "RECEIVED C_MAKE_MOVE"
                   playerMoveString <- hGetLine h
                   
                   case makeMove (board nextWorld) col (read playerMoveString) of
-                    Nothing -> hPutStrLn h "S_REJECT_MOVE"
+                    Nothing -> do
+                      hPutStrLn h "S_REJECT_MOVE"
+                      putStrLn "SENDING S_REJECT_MOVE"
                     Just newBoard -> do
                       let world = nextWorld { board = newBoard, turn = other(turn nextWorld) }
                       atomically $ writeTVar startBoard world

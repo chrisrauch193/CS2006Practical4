@@ -21,20 +21,23 @@ import Control.Concurrent
 main :: IO ()
 main = do
   args <- getOptions
+  boardPicture <- readBitmap "./assets/board.bmp" (cellSize $ optSize args)
+  whitePicture <- readBitmap "./assets/white.bmp" (cellSize $ optSize args)
+  blackPicture <- readBitmap "./assets/black.bmp" (cellSize $ optSize args)
   
   moveVar <- newTVarIO Nothing :: IO (TVar (Maybe Position))
-  worldVar <- newTVarIO (initWorld args)
+  worldVar <- newTVarIO (genWorld args)
   
   chan <- newChan
 
-  putStrLn "here"
+  --putStrLn "here"
   _ <- forkIO $ connect "127.0.0.1" "12345" (gameplayClientLoop worldVar chan) >> return ()
-  putStrLn "here2"
-  myFunkyPlay worldVar (InWindow "Gomoku" (640, 480) (10, 10)) rose 10
-    (initWorld args) -- in Board.hs
-    drawWorld -- in Draw.hs
+  --putStrLn "here2"
+  myFunkyPlay worldVar (InWindow "Gomoku" (640, 480) (10, 10)) setColour updateRate
+    (genWorld args) -- in Board.hs
+    (drawWorld boardPicture whitePicture blackPicture) -- in Draw.hs
     (handleClientInput chan)
-    updateWorld -- in AI.hs
+    updateMultiplayerWorld -- in AI.hs
 
 
 myFunkyPlay :: TVar world
@@ -76,21 +79,22 @@ gameplayClientLoop :: TVar World -> Chan String -> (Socket, SockAddr) -> IO ()
 gameplayClientLoop currentWorld chan (s, _) = do
   h <- socketToHandle s ReadWriteMode
   hPutStrLn h "C_CONNECT"
-  putStrLn "HERE FAM"
+  putStrLn "SENDING C_CONNECT"
   _ <- hGetLine h -- assume accept
   
   playerColourString <- hGetLine h
   let playerColour = read playerColourString
 
-  putStrLn "HERE FAM1"
+  --putStrLn "HERE FAM1"
   
   loop $ do
-    putStrLn "HERE FAM2"
+    --putStrLn "HERE FAM2"
     msgType <- hGetLine h
-    putStrLn "MEOW"
+    --putStrLn "MEOW"
     case msgType of
       "S_UPDATE_BOARD" -> do
-        putStrLn "HERE FAM3"
+        putStrLn "RECEIVED S_UPDATE_BOARD"
+        --putStrLn "HERE FAM3"
         firstBoardString <- hGetLine h
         let newBoard = read firstBoardString
 
@@ -99,19 +103,19 @@ gameplayClientLoop currentWorld chan (s, _) = do
           let nw = cw {board = newBoard, turn= (other playerColour)}
           writeTVar currentWorld nw
       "S_START_MOVE" -> do
-        putStrLn "HERE FAM4"
+        --putStrLn "HERE FAM4"
+        putStrLn "RECEIVED S_START_MOVE"
         atomically $ do
           current_world <- readTVar currentWorld
           let world = current_world { turn = playerColour }
           writeTVar currentWorld world
         nextMove <- readChan chan
         hPutStrLn h "C_MAKE_MOVE"
+        putStrLn "SENDING C_MAKE_MOVE"
         hPutStrLn h nextMove
-        putStrLn "HERE FAM5"
+        --putStrLn "HERE FAM5"
       _ -> return ()
 
-
---initWorld
 
 loop :: IO () -> IO ()
 loop a = do

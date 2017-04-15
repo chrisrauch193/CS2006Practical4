@@ -1,8 +1,17 @@
-module Draw(drawWorld) where
+module Draw(drawWorld, setColour, readBitmap) where
 
 import Graphics.Gloss
 import Board
 
+
+setColour :: Color
+setColour = makeColorI 100 100 100 0
+
+readBitmap :: String -> Float -> IO Picture
+readBitmap fileName size = do picture <- loadBMP fileName
+                              let xScale = size / bmpSize
+                              let yScale = size / bmpSize
+                              return (Scale xScale yScale picture)
 
 -- Given a world state, return a Picture which will render the world state.
 -- Currently just draws a single blue circle as a placeholder.

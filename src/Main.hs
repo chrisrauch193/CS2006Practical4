@@ -24,14 +24,7 @@ import System.Exit
 -- and, if it is an AI's turn, should update the board with an AI generated
 -- move
 
-setColour :: Color
-setColour = makeColorI 100 100 100 0
 
-readBitmap :: String -> Float -> IO Picture
-readBitmap fileName size = do picture <- loadBMP fileName
-                              let xScale = size / bmpSize
-                              let yScale = size / bmpSize
-                              return (Scale xScale yScale picture)
 
 main :: IO ()
 main = do options <- getOptions
