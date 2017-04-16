@@ -8,6 +8,9 @@ import Draw
 import Input
 import AI
 import Args
+import Params
+import Utils
+import Data
 
 import System.Environment
 import System.Exit
@@ -25,15 +28,13 @@ import System.Exit
 -- and, if it is an AI's turn, should update the board with an AI generated
 -- move
 
-
-
 main :: IO ()
 main = do options <- getOptions
           boardPicture <- readBitmap "./assets/board.bmp" (cellSize $ optSize options)
           whitePicture <- readBitmap "./assets/white.bmp" (cellSize $ optSize options)
           blackPicture <- readBitmap "./assets/black.bmp" (cellSize $ optSize options)
-          playIO (InWindow "Gomoku" (640, 480) (10, 10)) setColour updateRate
-            (genWorld options) -- in Args.hs
+          playIO (InWindow "Gomoku" (1120, 800) (10, 10)) setColour updateRate
+            (optionsWorld options) -- in Args.hs
             (drawWorld boardPicture whitePicture blackPicture) -- in Draw.hs
             handleInput -- in Input.hs
             chooseUpdateWorld -- in AI.hs

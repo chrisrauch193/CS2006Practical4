@@ -4,17 +4,9 @@ module AI where
 import Board
 import Debug.Trace
 import Args
+import Data
+import Utils
 
-data GameTree = GameTree { game_board :: Board,
-                           game_turn :: Col,
-                           next_moves :: [(Position, GameTree)] }
-  deriving (Show)
-
-depthAI :: Int
-depthAI = 2
-
-updateLoopTime :: Float
-updateLoopTime = 2.0
 
 -- Currently just generate all positions, update to make smarter generations
 genAllMoves :: Board -> Col -> [Position]
@@ -56,13 +48,6 @@ getCurrentTreeMax w = buildTree genAllMoves b t
         b = board w
         t = turn w
 
--- getCurrentTreeMin :: World -> GameTree
--- getCurrentTreeMin w = buildTree genAllMoves b t
---     where
---         b = board w
---         t = other (turn w)
-
-
 testTree = buildTree genAllMoves testBoard Black
 
 -- Get the best next move from a (possibly infinite) game tree. This should
@@ -81,6 +66,9 @@ getBestMove meowdepth currentTree = trace (show(bestMoveTuple)) fst bestMoveTupl
         -- | otherwise = getBestMove (depthAI - 1) (snd (head (shuffle currentTree)))
 -- traversing tree code kinda done ^^
 
+makeAIMove :: Board -> Col -> Position -> Board
+makeAIMove board col pos = board{pieces = ((pos,col):pieces board)}
+
 updateMultiplayerWorld :: Float -- ^ time since last update (you can ignore this)
             -> World -- ^ current world state
             -> World
@@ -91,7 +79,7 @@ updateMultiplayerWorld t w = w
 updateWorld :: Float -- ^ time since last update (you can ignore this)
             -> World -- ^ current world state
             -> World
---rupdateWorld t w = w
+
 updateWorld t w = if aiTurn == White then newWorld else w { timeElapsed = timeElapsed w + t }
   where
     aiTurn = turn w
@@ -100,27 +88,6 @@ updateWorld t w = if aiTurn == White then newWorld else w { timeElapsed = timeEl
     nextMovePos = getBestMove depthAI currentTree
     moveBoard = makeAIMove b aiTurn nextMovePos
     newWorld = w { board = moveBoard, turn = other aiTurn, timeElapsed = timeElapsed w + t }
-
-
-
--- updateWorld t w = case won w of
---                     True -> w
---                     False -> case checkWon moveBoard of
---                                Nothing -> if colour == optionCol then w { timeElapsed = newTime }
---                                           else nextWorld -- Update World with new move. Also send t server
---                                Just col -> trace ("col: " ++ show(col) ++ " won") nextWorld {won = True}
---                      where
---                          optionList = option w
---                          optionCol = optColour optionList
---                          currentTree = getCurrentTreeMax w
---                          b = board w
---                          colour = turn w
---                          next_t = other colour
---                          nextMovePos = getBestMove depthAI currentTree
---                          moveBoard = makeAIMove b colour nextMovePos
---                          newTime = if paused w then timeElapsed w else timeElapsed w + t
---                          nextWorld = w { board = moveBoard, turn = next_t, timeElapsed = newTime }
---                          newBoard = board nextWorld
 
 updateWorldNoAI :: Float -- ^ time since last update (you can ignore this)
            -> World -- ^ current world state
@@ -132,6 +99,7 @@ chooseUpdateWorld t w = if boolAI then return (updateWorld t w) else return (upd
                        where
                          options = option w
                          boolAI = ai options
+
 {- Hint: 'updateWorld' is where the AI gets called. If the world state
  indicates that it is a computer player's turn, updateWorld should use
  'getBestMove' to find where the computer player should play, and update
@@ -150,7 +118,7 @@ chooseUpdateWorld t w = if boolAI then return (updateWorld t w) else return (upd
 minimax :: GameTree -> Int -> Bool -> (Position, Int)
 minimax currentTree depth maximise
   | depth == 0 = trace(show currentBoard ++ "Has Score: " ++ show(evaluateBoard currentBoard)) (lastPlayedPiece, evaluateBoard currentBoard)
-  | maximise = (snd maxIndex, fst maxIndex) 
+  | maximise = (snd maxIndex, fst maxIndex)
   | otherwise = (snd minIndex, fst minIndex)
   where
     (nextMoves, nextTrees) = unzip (next_moves currentTree)
@@ -159,38 +127,6 @@ minimax currentTree depth maximise
     minIndex = minimum $ zip scores nextMoves
     currentBoard = game_board currentTree
     lastPlayedPiece = fst (head (pieces currentBoard))
-
--- maxMove :: [(Position, GameTree)] -> Int -> (Position, Int)
--- maxMove [x] depth = minimax nextTree (depth - 1)
---   where
---     nextTree = snd x
--- maxMove (x:xs) depth
---     | xBoardScore > maxTail = (fst x, snd xBoardScore)
---     | otherwise = maxTail
---     where
---       maxTail = maxMove xs depth
---       xBoard = game_board (snd x)
---       nextTree = snd x
---       xBoardScore = minimax nextTree (depth - 1)
-
--- minMove :: [(Position, GameTree)] -> Int -> (Position, Int)
--- minMove [x] depth = minimax nextTree (depth - 1)
---   where
---     xBoard = game_board (snd x)
---     nextTree = snd x
--- minMove (x:xs) depth
---     | xBoardScore < maxTail = ((fst x), (snd xBoardScore))
---     | otherwise = maxTail
---     where
---       maxTail = maxMove xs depth
---       xBoard = game_board (snd x)
---       nextTree = snd x
---       xBoardScore = minimax nextTree (depth - 1)
-
--- maximisingPlayer :: GameTree -> Int -> (Position, Int)
--- maximisingPlayer = do
---   let bestMove = minBound :: Int
-
 
 evaluateBoard :: Board -> Int
 evaluateBoard leafBoard = case checkWinAI leafBoard depthAI  of
@@ -228,8 +164,6 @@ getDirectionListNotBlocked (x,y) board = totalList
       --allCounts = getUnboundTotals allDirectionMoves [] 0
       --list = map (subtract 1) allCounts
 
-
-
 checkUnblockedFunction :: Board -> Position -> Col-> [(Position,Col)] -> Int-> Position-> (Int, Int)
 checkUnblockedFunction currentBoard (xCheck,yCheck) colToCheck listOfPieces numPieces (aToAdd,bToAdd)
   | validPieceHere == True = checkUnblockedFunction currentBoard newPos colToCheck listOfPieces newNumPieces (aToAdd,bToAdd)
@@ -242,7 +176,6 @@ checkUnblockedFunction currentBoard (xCheck,yCheck) colToCheck listOfPieces numP
     validPieceHere = any (matchPiece ((xCheck,yCheck), colToCheck)) listOfPieces
     blockedPieceHere = any (matchPiece ((xCheck,yCheck), other colToCheck)) listOfPieces
 
-
 checkOutOfBounds :: Board -> Position -> Bool
 checkOutOfBounds currentBoard (x, y)
   | (x > bSize) || (x < (bSize * (-1))) = True
@@ -250,7 +183,6 @@ checkOutOfBounds currentBoard (x, y)
   | otherwise = False
   where
     bSize = size currentBoard
-
 
 checkWinAI :: Board -> Int -> Maybe Col
 checkWinAI currentBoard depth

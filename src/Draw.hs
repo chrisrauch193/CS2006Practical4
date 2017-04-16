@@ -2,16 +2,9 @@ module Draw(drawWorld, setColour, readBitmap) where
 
 import Graphics.Gloss
 import Board
-
-
-setColour :: Color
-setColour = makeColorI 100 100 100 0
-
-readBitmap :: String -> Float -> IO Picture
-readBitmap fileName size = do picture <- loadBMP fileName
-                              let xScale = size / bmpSize
-                              let yScale = size / bmpSize
-                              return (Scale xScale yScale picture)
+import Data
+import Params
+import Debug.Trace
 
 -- Given a world state, return a Picture which will render the world state.
 -- Currently just draws a single blue circle as a placeholder.
@@ -20,23 +13,21 @@ readBitmap fileName size = do picture <- loadBMP fileName
 -- as a grid plus pieces.
 drawWorld :: Picture -> Picture -> Picture -> World -> IO Picture
 drawWorld boardPicture whitePicture blackPicture world
-  = return (pictures (bottom ++ middle ++ top))
+  = return (pictures (boardLayer ++ pausedLayer ++ infoLayer ++ gridLayer ++ wonLayer))
                where
                  dimension = size (board world)
                  boards = [ (i, j) | i <- [1 .. dimension], j <- [1 .. dimension] ]
                  whites = getPositions (pieces (board world)) White
                  blacks = getPositions (pieces (board world)) Black
-                 bottom = [ drawSquares boardPicture dimension boards ]
-                 middle = if paused world
-                            then []
-                            else [ drawSquares whitePicture dimension whites
-                                 , drawSquares blackPicture dimension blacks ]
-                 top    = [ Color black $ drawGrid dimension
-                          , drawTurn (turn world)
-                          , drawTime (timeElapsed world) ]
-
-drawBoard :: Picture -> Picture
-drawBoard boardPicture = undefined
+                 (gameInfoTitle, gameInfoText) = buildGameInfo world
+                 (keyMapTitle, keyMapText) = buildKeyMap
+                 boardLayer = [ drawSquares boardPicture dimension boards ]
+                 pausedLayer = if paused world then [ drawPaused ] else [ drawSquares whitePicture dimension whites, drawSquares blackPicture dimension blacks ]
+                 infoLayer = [ drawInfo gameInfoTitle gameInfoText leftTextOffset, drawInfo keyMapTitle keyMapText rightTextOffset ]
+                 gridLayer  = [ Color black $ drawGrid dimension ]
+                 wonLayer   = case checkWon world of
+                                Nothing     -> [ drawTurnWon (turn world) "to play next.", drawTime (timeElapsed world) ]
+                                Just colour -> [ drawTurnWon colour "has won.", drawGameOver ]
 
 getPositions :: [(Position, Col)] -> Col -> [Position]
 getPositions [] _ = []
@@ -65,18 +56,64 @@ getCoordinate dimension (r, c) = (x, y)
                                      x   = (fromIntegral r - mid) * cellSize dimension
                                      y   = (fromIntegral c - mid) * cellSize dimension
 
-drawTurn :: Col -> Picture
-drawTurn colour = pictures [ translate a b turnPicture
-                           , translate c d scaledText ]
-                             where
-                               (a, b) = turnOffset
-                               (c, d) = textOffset
-                               glossColour = if colour == White then white else black
-                               turnPicture = Color glossColour $ circleSolid pieceRadius
-                               scaledText = Scale textScale textScale $ Text "to play next."
+drawTurnWon :: Col -> String -> Picture
+drawTurnWon colour info = pictures [ translate a b turnPicture
+                                , translate c d scaledText ]
+                                  where
+                                    (a, b) = turnOffset
+                                    (c, d) = textOffset
+                                    glossColour = if colour == White then white else black
+                                    turnPicture = Color glossColour $ circleSolid pieceRadius
+                                    scaledText = Scale textScale textScale $ Text info
 
 drawTime :: Float -> Picture
 drawTime timeElapsed = translate a b scaledText
                          where
                            (a, b) = timeOffset
                            scaledText = Scale textScale textScale $ Text ("Time elapsed: " ++ show (round timeElapsed))
+
+drawGameOver :: Picture
+drawGameOver = translate a b scaledText
+                         where
+                           (a, b) = timeOffset
+                           scaledText = Scale textScale textScale $ Text "Game Over."
+
+drawPaused :: Picture
+drawPaused = translate a b scaledText
+  where
+    (a, b) = pauseOffset
+    scaledText = Scale textScale textScale $ Text "Paused."
+
+
+drawInfo :: String -> [String] -> Coordinate -> Picture
+drawInfo title info (xOffset, yOffset) = pictures infoPictures
+  where
+    titlePicture = translate xOffset yOffset $ Scale titleScale titleScale $ Text title
+    textPictures = map (translate xOffset yOffset . Scale textScale textScale . Text) info
+    textPicturesIndexed = zip textPictures [1 .. fromIntegral (length textPictures)]
+    textPicturesTranslated = map (\(p, i) -> translate 0 (-i * textSpacing) p ) textPicturesIndexed
+    infoPictures = titlePicture : textPicturesTranslated
+
+buildKeyMap :: (String, [String])
+buildKeyMap = ("Key Map:", keyText)
+  where
+    keyText = [ "u: undo"
+              , "n: new game"
+              , "p: pause"
+              , "s: save"
+              , "l: load" ]
+
+buildGameInfo :: World -> (String, [String])
+buildGameInfo world = ("Game Info:", infoText)
+  where
+    currentBoard = board world
+    ruleText = case rule world of
+                 Pente _   -> "Pente"
+                 ruleType  -> show ruleType
+    captureText = case rule world of
+                    Pente penteState -> "B" ++ show (blackCaptures penteState) ++ " W" ++ show (whiteCaptures penteState)
+                    _                -> "N/A"
+    infoText = [ "Size: " ++ show (size currentBoard)
+               , "Target: " ++ show (target currentBoard)
+               , "Rule: " ++ ruleText
+               , "Captures: " ++ captureText ]

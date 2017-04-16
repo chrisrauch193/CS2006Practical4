@@ -8,6 +8,9 @@ import Args
 import System.Exit (exitSuccess)
 import Debug.Trace
 import Control.Concurrent.Chan
+import Data
+import Utils
+import Params
 
 -- Update the world state given an input event. Some sample input events
 -- are given; when they happen, there is a trace printed on the console
@@ -15,6 +18,7 @@ import Control.Concurrent.Chan
 -- trace :: String -> a -> a
 -- 'trace' returns its second argument while printing its first argument
 -- to stderr, which can be a very useful way of debugging!
+
 handleClientInput :: Chan String -> Event -> World -> (World, IO ())
 handleClientInput chan (EventKey (MouseButton LeftButton) Up m (x, y)) w
   = case getPosition (size (board w)) x y of
@@ -23,71 +27,33 @@ handleClientInput chan (EventKey (MouseButton LeftButton) Up m (x, y)) w
             where
               current_board = board w
               new_board     = current_board { pieces = (position, turn w):(pieces current_board) }
-handleClientInput _ _ w = (w, return ()) 
---    = trace ("Left button pressed at: " ++ show (x,y)) b
 
-
-
-
-
+handleClientInput _ _ w = (w, return ())
 
 handleInput :: Event -> World -> IO World
-handleInput (EventMotion (x, y)) b
-    =  return b
-handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) b
-      = case winCondition of
-          True -> return(b)
-          False -> case getPosition (size (board b)) x y of
-                    Nothing -> return(b)
-                    Just position -> case new_board of
-                                      Nothing -> return(b { board = current_board})
-                                      Just new_board -> case winCol of
-                                                        Nothing -> return(b {board = new_board, turn = other (turn b), timeElapsed = 0 })
-                                                        Just col -> trace (show(col) ++  "WON") return(b {board = new_board, turn = other (turn b), won = True})
-                                        where
-                                            winCol = checkWon new_board
-                      where
-                        current_board = board b
-                        new_board     = makeMove current_board (turn b) position
-          where
-            winCondition = won b
---    = trace ("Left button pressed at: " ++ show (x,y)) b
-handleInput (EventKey (Char k) Down _ _) b
-    = case k of
-      'u' -> case won b of
-                False -> trace ("Key " ++ show k ++ " down") return(undoWorld)
-                True -> trace ("Can't Undo, Game Over") return(b)
-      'n' -> return(initB)
-      'a' -> return(b {option = aiOPtions})
-      'm' -> return(b {option  = multiPlayerOptions})
-      'p' -> return(b { paused = not (paused b) })
-      's' -> do
-        saveGame b savepath
-        return b
-      'l' -> do
-        loadedWorld <- loadGame savepath
-        return loadedWorld
-      otherwise -> trace ("Key " ++ show k ++ " down") return(b)
-    where
-      -- option = getCurrOption
-      curr_board = board b
-      options = option b
-      aiOPtions = options {nextAI = True}
-      multiPlayerOptions = options {nextAI = False}
-      initB = genWorld options
-      undoWorld = undo b
-      -- new_b = b {undoWorld, turn = other (turn b)}
-handleInput (EventKey (Char k) Up _ _) b
-    = trace ("Key " ++ show k ++ " up") return b
--- handleInput
-handleInput e b = return b
+handleInput (EventMotion (x, y)) w
+  =  return w
 
-{- Hint: when the 'World' is in a state where it is the human player's
- turn to move, a mouse press event should calculate which board position
- a click refers to, and update the board accordingly.
+handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) w
+  | wrapWon w = return w
+  | otherwise = return (wrapClick w x y)
 
- At first, it is reasonable to assume that both players are human players.
--}
+handleInput (EventKey (Char k) Down _ _) w
+  = case k of
+    'u'       -> return (undo w)
+    'n'       -> return (newWorld w)
+    'p'       -> return (w { paused = not (paused w) })
+    'a' -> return (b {option = aiOPtions})
+    'm' -> return (b {option  = multiPlayerOptions})
+    's' -> do
+      saveGame b savepath
+      return b
+    'l' -> do
+      loadedWorld <- loadGame savepath
+      return loadedWorld
+    otherwise -> return w
+
+handleInput e w = return w
 
 getPosition :: Int -> Float -> Float -> Maybe Position
 getPosition dimension x y = case getIndex dimension x of
@@ -105,13 +71,17 @@ getIndex dimension value
       cutoffs = [-halfSize + cell * i | i <- [0 .. fromIntegral dimension]]
       index   = length (takeWhile (< value) cutoffs)
 
--- spaceFreeCheck :: Int -> Int -> Board -> Bool
--- spaceFreeCheck x y board
---     |
---     where
+wrapClick :: World -> Float -> Float -> World
+wrapClick world x y = case getPosition (size (board world)) x y of
+                         Nothing       -> world
+                         Just position -> wrapPosition world position
 
--- getCurrOption :: Options
--- getCurrOption = do
---                   option <- getOptions
---                   return option
---                     --  options
+wrapPosition :: World -> Position -> World
+wrapPosition world position = case playRule (rule world) (board world) (turn world) position of
+                                (_, Nothing)             -> world
+                                (newRule, Just newBoard) -> world { board = newBoard, rule = newRule, turn = other (turn world), timeElapsed = 0 }
+
+wrapWon :: World -> Bool
+wrapWon world = case checkWon world of
+                  Nothing -> False
+                  _       -> True
