@@ -6,14 +6,15 @@ import System.IO
 import Control.Monad
 import System.Exit
 import System.Environment
+import Data
+import Utils
 
 startOptions :: Options
 startOptions = Options { optTarget = 5
                        , optSize   = 10
                        , optColour = Black
-                       , nextAI = True
-                       , ai = True
-                       }
+                       , optAI     = False
+                       , optRule   = Pente emptyPenteState }
 
 options :: [ OptDescr (Options -> IO Options) ]
 options =
@@ -33,7 +34,19 @@ options =
         (ReqArg
             (\arg opt -> return opt { optColour = read arg :: Col })
             "COLOUR")
-        "Colour to play first."
+        "The player colour."
+
+    , Option "a" ["AI"]
+        (ReqArg
+            (\arg opt -> return opt { optAI = read arg :: Bool })
+            "BOOLEAN")
+        "Whether to play an AI."
+
+    , Option "r" ["rule"]
+        (ReqArg
+            (\arg opt -> return opt { optRule = read arg :: Rule })
+            "RULE")
+        "The variation of Gomoku to play."
 
     , Option "h" ["help"]
         (NoArg
@@ -45,15 +58,10 @@ options =
 
 getOptions :: IO Options
 getOptions = do args <- getArgs
-
-                -- Parse options, getting a list of option actions
                 let (actions, nonOptions, errors) = getOpt RequireOrder options args
-
-                -- Here we thread startOptions through all supplied option actions
                 foldl (>>=) (return startOptions) actions
 
-genWorld :: Options -> World
-genWorld options = World (Board (optSize options) (optTarget options) []) (optColour options) False nextOP 0 False
-    where
-      next = nextAI options
-      nextOP = options {ai = next}
+optionsWorld :: Options -> World
+optionsWorld options = World board Black (optColour options) (optAI options) 0 False (optRule options)
+                       where
+                         board = Board (optSize options) (optTarget options) []

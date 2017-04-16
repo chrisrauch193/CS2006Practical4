@@ -2,6 +2,8 @@ module AI where
 
 import Board
 import Debug.Trace
+import Data
+import Utils
 
 data GameTree = GameTree { game_board :: Board,
                            game_turn :: Col,
@@ -70,15 +72,14 @@ updateWorld :: Float -- ^ time since last update (you can ignore this)
             -> World -- ^ current world state
             -> World
 --rupdateWorld t w = w
-updateWorld t w = case won w of
-                    True -> w
-                    False -> case checkWon newBoard of
-                              Nothing -> if colour == optionCol then w { timeElapsed = newTime }
-                                          else nextWorld -- Update World with new move. Also send t server
-                              Just col -> trace ("col: " ++ show(col) ++ " won") nextWorld {won = True}
+updateWorld t w = case checkBoardWon (board w) of
+                    Just colour -> w
+                    Nothing     -> case checkBoardWon newBoard of
+                                     Nothing -> if colour == optionCol then w { timeElapsed = newTime }
+                                                  else nextWorld -- Update World with new move. Also send t server
+                                     Just col -> nextWorld
                      where
-                         optionList = option w
-                         optionCol = optColour optionList
+                         optionCol = playerColour w
                          currentTree = getCurrentTree w
                          b = board w
                          colour = turn w
@@ -95,12 +96,10 @@ updateWorldNoAI :: Float -- ^ time since last update (you can ignore this)
 updateWorldNoAI t w = w { timeElapsed = timeElapsed w + t }
 
 chooseUpdateWorld :: Float -> World -> World
-chooseUpdateWorld t w = case boolAI of
+chooseUpdateWorld t w = case playAI w of
                         False -> w { timeElapsed = timeElapsed w + t }
                         True -> updateWorld t w
-                       where
-                         options = option w
-                         boolAI = ai options
+
 {- Hint: 'updateWorld' is where the AI gets called. If the world state
  indicates that it is a computer player's turn, updateWorld should use
  'getBestMove' to find where the computer player should play, and update
