@@ -19,8 +19,7 @@ main :: IO ()
 main = do
   os <- getOptions
   let w1 = (genWorld os)
-  let w2 = w1 { board = (board w1) { target = 2} }
-  serverWorld <- newTVarIO w2
+  serverWorld <- newTVarIO w1
   playerCount <- newTVarIO 0
   chan <- newChan
   serve HostAny "12345" (handleClient serverWorld playerCount chan)
@@ -61,6 +60,7 @@ handleClient startBoard playerCount chan (s, _) = do
             Just wonCol -> do
               hPutStrLn h "S_GAME_WON"
               putStrLn "SENDING GAME_WON"
+              putStrLn (show (board nextWorld))
               hPrint h wonCol
             Nothing -> if (turn nextWorld) == col then do
               hPutStrLn h "S_START_MOVE"

@@ -37,7 +37,7 @@ main = do
     (genWorld args) -- in Board.hs
     (drawWorld boardPicture whitePicture blackPicture) -- in Draw.hs
     (handleClientInput chan)
-    updateMultiplayerWorld -- in AI.hs
+    updateWorldNoAI -- in AI.hs
 
 
 myFunkyPlay :: TVar world
@@ -114,6 +114,10 @@ gameplayClientLoop currentWorld chan (s, _) = do
         putStrLn "SENDING C_MAKE_MOVE"
         hPutStrLn h nextMove
         --putStrLn "HERE FAM5"
+      "S_GAME_WON" -> do
+        wonCol <- hGetLine h
+        let winningCol = (read wonCol) :: Col
+        return ()
       _ -> return ()
 
 
