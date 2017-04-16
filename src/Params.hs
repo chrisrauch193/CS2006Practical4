@@ -48,9 +48,6 @@ titleScale = 0.3
 setColour :: Color
 setColour = makeColorI 100 100 100 0
 
-timeLimit :: Float
-timeLimit = 10.0
-
 leftTextOffset :: Coordinate
 leftTextOffset = (-halfSize - 250, 2 * textSpacing)
 

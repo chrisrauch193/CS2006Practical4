@@ -14,7 +14,8 @@ startOptions = Options { optTarget = 5
                        , optSize   = 19
                        , optColour = Black
                        , optAI     = True
-                       , optRule   = Pente emptyPenteState }
+                       , optRule   = Standard
+                       , optLimit  = 20.0 }
 
 --testBoard = Board 19 5 [((5,5), White), ((5,4), White), ((5,3), White), ((5,2), White), ((5,1), White)]
 --testWorld = World testBoard White False startOptions 0 False
@@ -65,6 +66,6 @@ getOptions = do args <- getArgs
                 foldl (>>=) (return startOptions) actions
 
 optionsWorld :: Options -> World
-optionsWorld options = World board Black (optColour options) (optAI options) 0 False (optRule options)
+optionsWorld options = World board Black (optAI options) 0 (optLimit options) False (optRule options)
                        where
-                         board = Board (optSize options) (optTarget options) []
+                         board = Board (optSize options) (optTarget options) [] (optColour options)

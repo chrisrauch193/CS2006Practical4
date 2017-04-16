@@ -14,7 +14,6 @@ executable gomoku
   Other-modules:       Board, Input, Draw, AI
   build-depends:       base >=4.6 && <4.10,
                        gloss,
-                       random-extras,
                        network-simple,
                        stm,
                        network,
@@ -28,7 +27,6 @@ executable client
   Other-modules:       Board, Input, Draw, AI
   build-depends:       base >=4.6 && <4.10,
                        gloss,
-                       random-extras,
                        network-simple,
                        stm,
                        network,
@@ -42,7 +40,6 @@ executable server
   Other-modules:       Board, Input, Draw, AI
   build-depends:       base >=4.6 && <4.10,
                        gloss,
-                       random-extras,
                        network-simple,
                        stm,
                        network,

@@ -26,7 +26,7 @@ drawWorld boardPicture whitePicture blackPicture world
                  infoLayer = [ drawInfo gameInfoTitle gameInfoText leftTextOffset, drawInfo keyMapTitle keyMapText rightTextOffset ]
                  gridLayer  = [ Color black $ drawGrid dimension ]
                  wonLayer   = case checkWon world of
-                                Nothing     -> [ drawTurnWon (turn world) "to play next.", drawTime (timeElapsed world) ]
+                                Nothing     -> [ drawTurnWon (turn world) "to play next.", drawTime (timeElapsed world) (timeLimit world) ]
                                 Just colour -> [ drawTurnWon colour "has won.", drawGameOver ]
 
 getPositions :: [(Position, Col)] -> Col -> [Position]
@@ -66,11 +66,12 @@ drawTurnWon colour info = pictures [ translate a b turnPicture
                                     turnPicture = Color glossColour $ circleSolid pieceRadius
                                     scaledText = Scale textScale textScale $ Text info
 
-drawTime :: Float -> Picture
-drawTime timeElapsed = translate a b scaledText
+drawTime :: Float -> Float -> Picture
+drawTime timeElapsed timeLimit = translate a b scaledText
                          where
                            (a, b) = timeOffset
-                           scaledText = Scale textScale textScale $ Text ("Time elapsed: " ++ show (round timeElapsed))
+                           timeRemaining = abs (round (timeLimit - timeElapsed))
+                           scaledText = Scale textScale textScale $ Text ("Time left: " ++ show timeRemaining)
 
 drawGameOver :: Picture
 drawGameOver = translate a b scaledText
