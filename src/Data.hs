@@ -16,7 +16,8 @@ data Options = Options { optTarget :: Int
                        , optSize   :: Int
                        , optColour :: Col
                        , optAI     :: Bool
-                       , optRule   :: Rule }
+                       , optRule   :: Rule
+                       , optLimit  :: Float }
   deriving (Show, Read, Generic)
 instance Binary Options
 
@@ -51,7 +52,8 @@ instance Binary PenteState
 
 data Board = Board { size   :: Int
                    , target :: Int
-                   , pieces :: [ (Position, Col) ] }
+                   , pieces :: [ (Position, Col) ]
+                   , playerColour :: Col }
   deriving (Show, Read, Eq, Generic)
 instance Binary Board
 
@@ -64,9 +66,9 @@ instance Binary Board
 -- most recent moves were).
 data World = World { board        :: Board
                    , turn         :: Col
-                   , playerColour :: Col
                    , playAI       :: Bool
                    , timeElapsed  :: Float
+                   , timeLimit    :: Float
                    , paused       :: Bool
                    , rule         :: Rule }
   deriving (Show, Read, Generic)
