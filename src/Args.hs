@@ -8,15 +8,27 @@ import Control.Monad
 import System.Exit
 import System.Environment
 
+
+
+-- import System.Directory
+-- import System.Console.Haskeline
+-- import Control.Monad.IO.Class
+-- import Control.Monad.Trans
+-- import Data.List
+-- import GHC.Generics
+-- import Data.Binary
+-- import Data.ByteString.Lazy (writeFile, readFile)
+
+
 startOptions :: Options
 startOptions = Options { optTarget = 5
-                       , optSize   = 19
+                       , optSize   = 10
                        , optColour = Black
                        , nextAI = True
                        , ai = True
                        }
 
-testBoard = Board 19 5 [((5,5), Black), ((5,4), Black), ((5,3), Black), ((5,2), Black), ((5,1), Black)]
+testBoard = Board 19 5 [((5,5), White), ((5,4), White), ((5,3), White), ((5,2), White), ((5,1), White)]
 testWorld = World testBoard White False startOptions 0 False
 
 options :: [ OptDescr (Options -> IO Options) ]
@@ -61,3 +73,17 @@ genWorld options = World (Board (optSize options) (optTarget options) []) (optCo
     where
       next = nextAI options
       nextOP = options {ai = next}
+
+
+-- -- |The Save function, saves binary encoding of the current GameState to a file to be decoded later
+-- saveGame :: World            -- ^ The GameState to be saved
+--             -> FilePath         -- ^ The save file path
+--             -> World IO ()     -- ^ The IO() reutrn to continue playing
+-- saveGame state file = do let str = encode state
+--                          lift (Data.ByteString.Lazy.writeFile file str)
+
+-- -- |The load function, loads and decodes the binary gamestate that from the save file
+-- loadGame :: FilePath                    -- ^ The save file path
+--             -> InputT IO GameData       -- ^ Returns IO GameData to continue playing be with the new GameState
+-- loadGame f = do read_file <- lift (Data.ByteString.Lazy.readFile f)
+--                 return (decode read_file :: GameData)

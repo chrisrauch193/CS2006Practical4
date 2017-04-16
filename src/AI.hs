@@ -72,7 +72,7 @@ testTree = buildTree genAllMoves testBoard Black
 getBestMove :: Int -- ^ Maximum search depth
                -> GameTree -- ^ Initial game tree
                -> Position
-getBestMove meowdepth currentTree = fst bestMoveTuple
+getBestMove meowdepth currentTree = trace (show(bestMoveTuple)) fst bestMoveTuple
   where
     bestMoveTuple = minimax currentTree meowdepth True
 
@@ -149,7 +149,7 @@ chooseUpdateWorld t w = if boolAI then updateWorld t w else updateWorldNoAI t w
 
 minimax :: GameTree -> Int -> Bool -> (Position, Int)
 minimax currentTree depth maximise
-  | depth == 0 = (lastPlayedPiece, evaluateBoard currentBoard)
+  | depth == 0 = trace(show currentBoard ++ "Has Score: " ++ show(evaluateBoard currentBoard)) (lastPlayedPiece, evaluateBoard currentBoard)
   | maximise = (snd maxIndex, fst maxIndex) 
   | otherwise = (snd minIndex, fst minIndex)
   where
@@ -195,7 +195,7 @@ minimax currentTree depth maximise
 evaluateBoard :: Board -> Int
 evaluateBoard leafBoard = case checkWinAI leafBoard depthAI  of
                             Just Black -> minBound :: Int
-                            Just White -> maxBound :: Int
+                            Just White -> (maxBound :: Int)
                             _ -> sum finalScoreList
                               where
                                 pieceLineCountList = map (\(pos, col) -> sum(getDirectionListNotBlocked (pos, col) leafBoard)) (pieces leafBoard)
@@ -255,7 +255,7 @@ checkOutOfBounds currentBoard (x, y)
 checkWinAI :: Board -> Int -> Maybe Col
 checkWinAI currentBoard depth
   | piecesWon == [] = Nothing
-  | otherwise = Just (fst (head piecesWon))
+  | otherwise =  Just (fst (last piecesWon))-- trace (show((fst (last piecesWon)))) Just (fst (last piecesWon))
   where
     piecesToCheck = take depth (pieces currentBoard)
     pieceDirections = map (\(a, b) -> getDirectionList (a, b) currentBoard) piecesToCheck
