@@ -194,7 +194,7 @@ checkOutOfBounds currentBoard (x, y)
 checkWinAI :: Board -> Col -> Int -> Bool
 checkWinAI currentBoard wonCol depth
   | colWonList == [] = False--trace (show(currentBoard) ++ "False") False
-  | fst (head colWonList) == wonCol = trace (show(currentBoard) ++ "Trrrrrrrrrrrrrrrrrrrrruuuuuueeeeeeeeee" ++ show(wonCol)) True
+  | fst (last colWonList) == wonCol = trace (show(currentBoard) ++ "Trrrrrrrrrrrrrrrrrrrrruuuuuueeeeeeeeee" ++ show(wonCol)) True
   | otherwise = False-- trace (show(currentBoard) ++ "False") False
   where
     piecesToCheck = take depth (pieces currentBoard)
