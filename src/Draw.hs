@@ -18,9 +18,9 @@ readBitmap fileName size = do picture <- loadBMP fileName
 --
 -- This will need to extract the Board from the world state and draw it
 -- as a grid plus pieces.
-drawWorld :: Picture -> Picture -> Picture -> World -> Picture
+drawWorld :: Picture -> Picture -> Picture -> World -> IO Picture
 drawWorld boardPicture whitePicture blackPicture world
-  = pictures (bottom ++ middle ++ top)
+  = return (pictures (bottom ++ middle ++ top))
                where
                  dimension = size (board world)
                  boards = [ (i, j) | i <- [1 .. dimension], j <- [1 .. dimension] ]

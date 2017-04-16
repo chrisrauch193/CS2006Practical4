@@ -127,8 +127,8 @@ updateWorldNoAI :: Float -- ^ time since last update (you can ignore this)
            -> World
 updateWorldNoAI t w = w { timeElapsed = timeElapsed w + t }
 
-chooseUpdateWorld :: Float -> World -> World
-chooseUpdateWorld t w = if boolAI then updateWorld t w else updateWorldNoAI t w
+chooseUpdateWorld :: Float -> World -> IO World
+chooseUpdateWorld t w = if boolAI then return (updateWorld t w) else return (updateWorldNoAI t w)
                        where
                          options = option w
                          boolAI = ai options

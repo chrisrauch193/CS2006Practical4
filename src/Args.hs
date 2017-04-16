@@ -14,10 +14,9 @@ import System.Environment
 -- import System.Console.Haskeline
 -- import Control.Monad.IO.Class
 -- import Control.Monad.Trans
--- import Data.List
--- import GHC.Generics
--- import Data.Binary
--- import Data.ByteString.Lazy (writeFile, readFile)
+
+import Data.Binary
+import Data.ByteString.Lazy (writeFile, readFile)
 
 
 startOptions :: Options
@@ -78,12 +77,33 @@ genWorld options = World (Board (optSize options) (optTarget options) []) (optCo
 -- -- |The Save function, saves binary encoding of the current GameState to a file to be decoded later
 -- saveGame :: World            -- ^ The GameState to be saved
 --             -> FilePath         -- ^ The save file path
---             -> World IO ()     -- ^ The IO() reutrn to continue playing
--- saveGame state file = do let str = encode state
---                          lift (Data.ByteString.Lazy.writeFile file str)
+--             -> (World, IO ()) -- ^ The IO() reutrn to continue playing
+-- saveGame world file = do
+--   let str = encode world
+--   (world, Data.ByteString.Lazy.writeFile file str)
 
 -- -- |The load function, loads and decodes the binary gamestate that from the save file
--- loadGame :: FilePath                    -- ^ The save file path
---             -> InputT IO GameData       -- ^ Returns IO GameData to continue playing be with the new GameState
--- loadGame f = do read_file <- lift (Data.ByteString.Lazy.readFile f)
---                 return (decode read_file :: GameData)
+-- loadGame :: World
+--          -> FilePath                    -- ^ The save file path
+--          -> (World, IO ()) -- ^ Returns IO GameData to continue playing be with the new GameState
+-- loadGame w f = do
+--   read_file <- (w, Data.ByteString.Lazy.readFile f)
+--   ((decode read_file :: World), return ())
+
+-- -- ((decode read_file :: World), return ())
+
+
+-- |The Save function, saves binary encoding of the current GameState to a file to be decoded later
+saveGame :: World            -- ^ The GameState to be saved
+            -> FilePath         -- ^ The save file path
+            -> IO () -- ^ The IO() reutrn to continue playing
+saveGame world file = do
+  let str = encode world
+  Data.ByteString.Lazy.writeFile file str
+
+-- |The load function, loads and decodes the binary gamestate that from the save file
+loadGame :: FilePath                    -- ^ The save file path
+         -> IO World -- ^ Returns IO GameData to continue playing be with the new GameState
+loadGame f = do
+  read_file <- Data.ByteString.Lazy.readFile f
+  return (decode read_file :: World)

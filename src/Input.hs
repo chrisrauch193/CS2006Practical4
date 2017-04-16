@@ -31,20 +31,20 @@ handleClientInput _ _ w = (w, return ())
 
 
 
-handleInput :: Event -> World -> World
+handleInput :: Event -> World -> IO World
 handleInput (EventMotion (x, y)) b
-    =  b
+    =  return b
 handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) b
       = case winCondition of
-          True -> b
+          True -> return(b)
           False -> case getPosition (size (board b)) x y of
-                    Nothing -> b
+                    Nothing -> return(b)
                     Just position -> case new_board of
-                                      Nothing -> (b { board = current_board})
+                                      Nothing -> return(b { board = current_board})
                                       Just new_board -> case winCol of
-                                                        Nothing -> b {board = new_board, turn = other (turn b), timeElapsed = 0 }
-                                                        Just col -> trace (show(col) ++  "WON") b {board = new_board, turn = other (turn b), won = True}
-                                          where
+                                                        Nothing -> return(b {board = new_board, turn = other (turn b), timeElapsed = 0 })
+                                                        Just col -> trace (show(col) ++  "WON") return(b {board = new_board, turn = other (turn b), won = True})
+                                        where
                                             winCol = checkWon new_board
                       where
                         current_board = board b
@@ -55,13 +55,19 @@ handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) b
 handleInput (EventKey (Char k) Down _ _) b
     = case k of
       'u' -> case won b of
-                False -> trace ("Key " ++ show k ++ " down") undoWorld
-                True -> trace ("Can't Undo, Game Over")b
-      'n' -> initB
-      'a' -> b {option = aiOPtions}
-      'm' -> b {option  = multiPlayerOptions}
-      'p' -> b { paused = not (paused b) }
-      otherwise -> trace ("Key " ++ show k ++ " down") b
+                False -> trace ("Key " ++ show k ++ " down") return(undoWorld)
+                True -> trace ("Can't Undo, Game Over") return(b)
+      'n' -> return(initB)
+      'a' -> return(b {option = aiOPtions})
+      'm' -> return(b {option  = multiPlayerOptions})
+      'p' -> return(b { paused = not (paused b) })
+      's' -> do
+        saveGame b savepath
+        return b
+      'l' -> do
+        loadedWorld <- loadGame savepath
+        return loadedWorld
+      otherwise -> trace ("Key " ++ show k ++ " down") return(b)
     where
       -- option = getCurrOption
       curr_board = board b
@@ -72,9 +78,9 @@ handleInput (EventKey (Char k) Down _ _) b
       undoWorld = undo b
       -- new_b = b {undoWorld, turn = other (turn b)}
 handleInput (EventKey (Char k) Up _ _) b
-    = trace ("Key " ++ show k ++ " up") b
+    = trace ("Key " ++ show k ++ " up") return b
 -- handleInput
-handleInput e b = b
+handleInput e b = return b
 
 {- Hint: when the 'World' is in a state where it is the human player's
  turn to move, a mouse press event should calculate which board position

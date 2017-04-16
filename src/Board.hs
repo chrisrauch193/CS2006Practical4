@@ -1,5 +1,10 @@
+{-# LANGUAGE DeriveGeneric #-}
 module Board where
 import Debug.Trace
+
+import Data.List
+import GHC.Generics
+import Data.Binary
 
 data Flag = Target String
           | Size String
@@ -12,10 +17,12 @@ data Options = Options  { optTarget :: Int
                         , nextAI :: Bool
                         , ai :: Bool
                         }
-  deriving (Show)
+  deriving (Show, Read, Generic)
+instance Binary Options
 
 data Col = Black | White
-  deriving (Show, Eq, Read)
+  deriving (Show, Eq, Read, Generic)
+instance Binary Col
 
 other :: Col -> Col
 other Black = White
@@ -24,6 +31,10 @@ other White = Black
 type Position = (Int, Int)
 
 type Coordinate = (Float, Float)
+
+-- |The path of the save file
+savepath :: String      -- ^ The path is of type String
+savepath = "./save"
 
 gridSize :: Float
 gridSize = 480
@@ -76,7 +87,8 @@ data Board = Board { size :: Int,
                      target :: Int,
                      pieces :: [(Position, Col)]
                    }
-  deriving (Show,Eq, Read)
+  deriving (Show,Eq, Read, Generic)
+instance Binary Board
 
 -- Default board is 6x6, target is 3 in a row, no initial pieces
 initBoard = Board 19 5 [((5, 5), Black)]
@@ -94,7 +106,8 @@ data World = World { board :: Board
                    , option :: Options
                    , timeElapsed :: Float
                    , paused :: Bool }
-  deriving (Show)
+  deriving (Show, Read, Generic)
+instance Binary World
 
 
 -- Play a move on the board; return 'Nothing' if the move is invalid

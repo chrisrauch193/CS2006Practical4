@@ -45,7 +45,7 @@ myFunkyPlay :: TVar world
             -> Color
             -> Int
             -> world
-            -> (world -> Picture)
+            -> (world -> IO Picture)
             -> (Event -> world -> (world, IO()))
             -> (Float -> world -> world)
             -> IO ()
@@ -56,7 +56,7 @@ myFunkyPlay var dsp col sz initworld draw input update = do
     draw' _  = do
       wrld <- readTVarIO var
       let pic = draw wrld
-      return pic
+      pic
       
     input' event _  = do
       (nw, a) <-atomically $ do
