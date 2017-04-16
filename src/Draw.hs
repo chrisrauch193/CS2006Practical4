@@ -1,4 +1,4 @@
-module Draw(drawWorld, setColour, readBitmap) where
+module Draw where
 
 import Graphics.Gloss
 import Board

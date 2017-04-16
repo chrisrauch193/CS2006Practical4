@@ -40,14 +40,12 @@ handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) w
 
 handleInput (EventKey (Char k) Down _ _) w
   = case k of
-    'u'       -> return (undo w)
-    'n'       -> return (newWorld w)
-    'p'       -> return (w { paused = not (paused w) })
-    'a' -> return (b {option = aiOPtions})
-    'm' -> return (b {option  = multiPlayerOptions})
+    'u' -> return (undo w)
+    'n' -> return (newWorld w)
+    'p' -> return (w { paused = not (paused w) })
     's' -> do
-      saveGame b savepath
-      return b
+      saveGame w savepath
+      return w
     'l' -> do
       loadedWorld <- loadGame savepath
       return loadedWorld

@@ -6,7 +6,7 @@ import Debug.Trace
 import Args
 import Data
 import Utils
-
+import Params
 
 -- Currently just generate all positions, update to make smarter generations
 genAllMoves :: Board -> Col -> [Position]
@@ -48,7 +48,7 @@ getCurrentTreeMax w = buildTree genAllMoves b t
         b = board w
         t = turn w
 
-testTree = buildTree genAllMoves testBoard Black
+--testTree = buildTree genAllMoves testBoard Black
 
 -- Get the best next move from a (possibly infinite) game tree. This should
 -- traverse the game tree up to a certain depth, and pick the move which
@@ -95,10 +95,7 @@ updateWorldNoAI :: Float -- ^ time since last update (you can ignore this)
 updateWorldNoAI t w = w { timeElapsed = timeElapsed w + t }
 
 chooseUpdateWorld :: Float -> World -> IO World
-chooseUpdateWorld t w = if boolAI then return (updateWorld t w) else return (updateWorldNoAI t w)
-                       where
-                         options = option w
-                         boolAI = ai options
+chooseUpdateWorld t w = if playAI w then return (updateWorld t w) else return (updateWorldNoAI t w)
 
 {- Hint: 'updateWorld' is where the AI gets called. If the world state
  indicates that it is a computer player's turn, updateWorld should use

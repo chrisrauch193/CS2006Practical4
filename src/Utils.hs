@@ -4,6 +4,9 @@ import Data
 import Graphics.Gloss
 import Params
 
+import Data.Binary
+import Data.ByteString.Lazy (writeFile, readFile)
+
 other :: Col -> Col
 other Black = White
 other White = Black

@@ -1,4 +1,10 @@
+{-# LANGUAGE DeriveGeneric #-}
 module Data where
+
+import Data.List
+import GHC.Generics
+import Data.Binary
+
 
 data Flag =
     Target String
@@ -26,7 +32,8 @@ data Rule =
     Standard
   | Handicap
   | Pente PenteState
-  deriving (Show, Read)
+  deriving (Show, Read, Generic)
+instance Binary Rule
 
 -- A Board is a record containing the board size (a board is a square grid,
 -- n * n), the number of pieces in a row required to win, and a list
@@ -39,7 +46,8 @@ data Rule =
 data PenteState = PenteState { blackCaptures  :: Int
                              , whiteCaptures  :: Int
                              , captureHistory :: [ (Board, Int, Int) ] }
-  deriving (Show, Read)
+  deriving (Show, Read, Generic)
+instance Binary PenteState
 
 data Board = Board { size   :: Int
                    , target :: Int

@@ -10,7 +10,9 @@ import Board
 import Draw
 import Input
 import AI
-
+import Utils
+import Params
+import Data
 import Args
 
 import Graphics.Gloss
@@ -26,15 +28,15 @@ main = do
   blackPicture <- readBitmap "./assets/black.bmp" (cellSize $ optSize args)
   
   moveVar <- newTVarIO Nothing :: IO (TVar (Maybe Position))
-  worldVar <- newTVarIO (genWorld args)
+  worldVar <- newTVarIO (optionsWorld args)
   
   chan <- newChan
 
   --putStrLn "here"
   _ <- forkIO $ connect "127.0.0.1" "12345" (gameplayClientLoop worldVar chan) >> return ()
   --putStrLn "here2"
-  myFunkyPlay worldVar (InWindow "Gomoku" (640, 480) (10, 10)) setColour updateRate
-    (genWorld args) -- in Board.hs
+  myFunkyPlay worldVar (InWindow "Gomoku" (1120, 800) (10, 10)) setColour updateRate
+    (optionsWorld args) -- in Board.hs
     (drawWorld boardPicture whitePicture blackPicture) -- in Draw.hs
     (handleClientInput chan)
     updateWorldNoAI -- in AI.hs

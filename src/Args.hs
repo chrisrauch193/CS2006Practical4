@@ -9,10 +9,6 @@ import System.Environment
 import Data
 import Utils
 
-import Data.Binary
-import Data.ByteString.Lazy (writeFile, readFile)
-
-
 startOptions :: Options
 startOptions = Options { optTarget = 5
                        , optSize   = 19

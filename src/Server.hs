@@ -12,13 +12,14 @@ import Draw
 import Input
 import AI
 import Args
-
---data Board = Board Int
+import Data
+import Utils
+import Params
 
 main :: IO ()
 main = do
   os <- getOptions
-  let w1 = (genWorld os)
+  let w1 = (optionsWorld os)
   serverWorld <- newTVarIO w1
   playerCount <- newTVarIO 0
   chan <- newChan
@@ -56,7 +57,7 @@ handleClient startBoard playerCount chan (s, _) = do
           putStrLn "SENDING UPDATE_BOARD"
           hPrint h  $ board nextWorld
 
-          case checkWon (board nextWorld) of
+          case checkWon nextWorld of
             Just wonCol -> do
               hPutStrLn h "S_GAME_WON"
               putStrLn "SENDING GAME_WON"
