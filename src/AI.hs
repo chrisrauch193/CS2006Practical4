@@ -181,6 +181,8 @@ checkOutOfBounds currentBoard (x, y)
   where
     bSize = size currentBoard
 
+
+
 checkWinAI :: Board -> Int -> Maybe Col
 checkWinAI currentBoard depth
   | piecesWon == [] = Nothing
@@ -190,3 +192,11 @@ checkWinAI currentBoard depth
     pieceDirections = map (\(a, b) -> getDirectionList (a, b) currentBoard) piecesToCheck
     pieceResults = zip (map snd (pieces currentBoard)) (map (\dirList -> (any (\dir -> dir >= (target currentBoard)) dirList)) pieceDirections)
     piecesWon = filter (\(a, b) -> b == True) pieceResults
+
+-- checkWinAI :: Board -> Col -> Int -> Bool
+-- checkWinAI currentBoard wonCol depth = any (\(a, b) -> b == True && a == wonCol) pieceResults
+--   where
+--     piecesToCheck = take depth (pieces currentBoard)
+--     pieceDirections = map (\(a, b) -> getDirectionList (a, b) currentBoard) piecesToCheck
+--     pieceResults = zip (map snd (pieces currentBoard)) (map (\dirList -> (any (\dir -> dir >= (target currentBoard)) dirList)) pieceDirections)
+
