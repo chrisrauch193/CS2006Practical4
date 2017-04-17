@@ -107,8 +107,9 @@ updateWorld t w
     currentBoard = board w
     currentTree = getCurrentTreeMax w
     nextMovePos = getBestMove depthAI currentTree
-    moveBoard = makeAIMove currentBoard currentTurn nextMovePos
-    newWorld = w { board = moveBoard, turn = other currentTurn, timeElapsed = 0 }
+    newWorld = case playRule (rule w) (board w) (turn w) nextMovePos of
+                 (_, Nothing)             -> w
+                 (newRule, Just newBoard) -> w { board = newBoard, rule = newRule, turn = other (turn w), timeElapsed = 0 }
     newTime = if paused w then timeElapsed w else timeElapsed w + t
 
 updateWorldNoAI :: Float -- ^ time since last update (you can ignore this)
