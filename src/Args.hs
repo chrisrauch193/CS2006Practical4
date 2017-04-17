@@ -17,8 +17,7 @@ startOptions = Options { optTarget = 5
                        , optRule   = Standard
                        , optLimit  = 20.0 }
 
---testBoard = Board 19 5 [((5,5), White), ((5,4), White), ((5,3), White), ((5,2), White), ((5,1), White)]
---testWorld = World testBoard White False startOptions 0 False
+
 
 options :: [ OptDescr (Options -> IO Options) ]
 options =

@@ -58,7 +58,7 @@ rightTextOffset :: Coordinate
 rightTextOffset = (halfSize + 50, 2.5 * textSpacing)
 
 depthAI :: Int
-depthAI = 1
+depthAI = 2
 
 updateLoopTime :: Float
 updateLoopTime = 2.0
