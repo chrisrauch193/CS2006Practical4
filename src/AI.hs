@@ -17,6 +17,8 @@ genAllMoves b c = [(x, y) | x <- [1..s],
         s = size b
 -}
 
+testBoard = Board 19 5 [((2,3), Black), ((1,3), Black), ((1,2), Black), ((2,2), White), ((1,1), White)] Black
+
 genAllMoves :: Board -> Col -> [Position]
 genAllMoves board colour = if null matchedPositions then allPositions else matchedPositions
   where
@@ -66,7 +68,7 @@ getCurrentTreeMax w = buildTree genAllMoves b t
         b = board w
         t = turn w
 
---testTree = buildTree genAllMoves testBoard Black
+testTree = buildTree genAllMoves testBoard White
 
 -- Get the best next move from a (possibly infinite) game tree. This should
 -- traverse the game tree up to a certain depth, and pick the move which
@@ -143,9 +145,9 @@ minimax :: GameTree -> Int -> Bool -> (Position, Int)
 minimax currentTree depth maximise
   | hasWon = case checkBoardWon currentBoard of
                Just colour -> if (playerColour currentBoard) == colour then (lastPlayedPiece, minBound) else (lastPlayedPiece, maxBound)
-  | (depth == 0) || (null nextMoves) = (lastPlayedPiece, evaluateBoardBasic currentBoard)
-  | maximise = (snd maxIndex, fst maxIndex)
-  | otherwise = (snd minIndex, fst minIndex)
+  | (depth == 0) || (null nextMoves) = trace ("cats" ++ show (lastPlayedPiece, evaluateSimple currentBoard)) (lastPlayedPiece, evaluateSimple currentBoard)
+  | maximise = (snd maxScoreMove, fst maxScoreMove)
+  | otherwise = (snd minScoreMove, fst minScoreMove)
   where
     currentBoard = game_board currentTree
     hasWon = case checkBoardWon currentBoard of
@@ -153,8 +155,8 @@ minimax currentTree depth maximise
                Just colour -> True
     (nextMoves, nextTrees) = unzip (next_moves currentTree)
     scores = map (\t -> snd (minimax t (depth - 1) (not maximise))) nextTrees
-    maxIndex = safeMax $ zip scores nextMoves
-    minIndex = minimum $ zip scores nextMoves
+    maxScoreMove = maximum $ zip scores nextMoves
+    minScoreMove = minimum $ zip scores nextMoves
     lastPlayedPiece = fst (head (pieces currentBoard))
 
 
@@ -255,4 +257,16 @@ getOccurence :: Eq a => a -> [a] -> Int
 getOccurence element = length . filter (==element)
 
 calculateLineScoreBasic :: [(Int,(Int,Int))] -> Int
-calculateLineScoreBasic scoreList = sum $ map (\(a, (b, c)) -> ((5 ^ a) * b) - ((5 ^ a) * c)) scoreList
+calculateLineScoreBasic scoreList = sum $ map (\(a, (b, c)) -> ((4 ^ a) * b) - ((4 ^ a) * c)) scoreList
+
+
+evaluateSimple :: Board -> Int
+evaluateSimple currentBoard
+  | playerWin = minBound :: Int
+  | aiWin = (maxBound :: Int) - 1
+  | otherwise = getOccurence White piecess -  (getOccurence Black piecess)
+  where
+    playerCol = playerColour currentBoard
+    aiWin = checkWinAI currentBoard (other playerCol) depthAI
+    playerWin = checkWinAI currentBoard playerCol depthAI
+    piecess = map snd $ pieces currentBoard
