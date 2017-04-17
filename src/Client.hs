@@ -85,7 +85,7 @@ gameplayClientLoop currentWorld chan (s, _) = do
   _ <- hGetLine h -- assume accept
   
   playerColourString <- hGetLine h
-  let playerColour = read playerColourString
+  let playerColour = read playerColourString :: Col
 
   --putStrLn "HERE FAM1"
   

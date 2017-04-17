@@ -11,7 +11,7 @@ import Utils
 
 startOptions :: Options
 startOptions = Options { optTarget = 5
-                       , optSize   = 19
+                       , optSize   = 10
                        , optColour = Black
                        , optAI     = True
                        , optRule   = Standard

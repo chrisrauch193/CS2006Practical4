@@ -1,10 +1,5 @@
-{-# LANGUAGE DeriveGeneric #-}
 module Board where
 import Debug.Trace
-
-import Data.List
-import GHC.Generics
-import Data.Binary
 
 import Data
 import Utils
