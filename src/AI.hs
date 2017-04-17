@@ -7,13 +7,31 @@ import Args
 import Data
 import Utils
 import Params
+import Data.List
 
 -- Currently just generate all positions, update to make smarter generations
-genAllMoves :: Board -> Col -> [Position]
+{-genAllMoves :: Board -> Col -> [Position]
 genAllMoves b c = [(x, y) | x <- [1..s],
                             y <- [1..s] ]
     where
         s = size b
+-}
+
+genAllMoves :: Board -> Col -> [Position]
+genAllMoves board colour = if null matchedPositions then allPositions else matchedPositions
+  where
+    allPositions = [(i, j) | i <- [1 .. size board], j <- [1 .. size board] ]
+    allMatchedPositions = filter (checkNeighbour board 2) allPositions
+    existingPositions = map fst (pieces board)
+    matchedPositions = filter (\p -> notElem p existingPositions) allMatchedPositions
+
+checkNeighbour :: Board -> Int -> Position -> Bool
+checkNeighbour board maxRadius (xPosition, yPosition) = not (null matched)
+  where
+    checkPositions = [ (xPosition + i * radius, yPosition + j * radius)
+                     | radius <- [1 .. maxRadius], (i, j) <- directionList ]
+    existingPositions = map fst (pieces board)
+    matched = intersect checkPositions existingPositions
 
 -- Given a function to generate plausible moves (i.e. board positions)
 -- for a player (Col) on a particular board, generate a (potentially)
@@ -57,7 +75,7 @@ getCurrentTreeMax w = buildTree genAllMoves b t
 getBestMove :: Int -- ^ Maximum search depth
                -> GameTree -- ^ Initial game tree
                -> Position
-getBestMove meowdepth currentTree = trace (show(bestMoveTuple)) fst bestMoveTuple
+getBestMove meowdepth currentTree = fst bestMoveTuple
   where
     bestMoveTuple = minimax currentTree meowdepth True
 
@@ -76,18 +94,22 @@ updateMultiplayerWorld t w = w
 
 
 -- Update the world state after some time has passed
-updateWorld :: Float -- ^ time since last update (you can ignore this)
-            -> World -- ^ current world state
-            -> World
-
-updateWorld t w = if aiTurn == White then newWorld else w { timeElapsed = timeElapsed w + t }
+updateWorld :: Float -> World -> World
+updateWorld t w
+  | gameWon                                  = w { timeElapsed = newTime }
+  | turn w == other (playerColour (board w)) = newWorld
+  | otherwise                                = w { timeElapsed = newTime }
   where
-    aiTurn = turn w
-    b = board w
+    gameWon = case checkWon w of
+                Nothing -> False
+                _       -> True
+    currentTurn = turn w
+    currentBoard = board w
     currentTree = getCurrentTreeMax w
     nextMovePos = getBestMove depthAI currentTree
-    moveBoard = makeAIMove b aiTurn nextMovePos
-    newWorld = w { board = moveBoard, turn = other aiTurn, timeElapsed = timeElapsed w + t }
+    moveBoard = makeAIMove currentBoard currentTurn nextMovePos
+    newWorld = w { board = moveBoard, turn = other currentTurn, timeElapsed = 0 }
+    newTime = if paused w then timeElapsed w else timeElapsed w + t
 
 updateWorldNoAI :: Float -- ^ time since last update (you can ignore this)
            -> World -- ^ current world state
@@ -114,7 +136,7 @@ chooseUpdateWorld t w = if playAI w then return (updateWorld t w) else return (u
 
 minimax :: GameTree -> Int -> Bool -> (Position, Int)
 minimax currentTree depth maximise
-  | depth == 0 = trace(show currentBoard ++ "Has Score: " ++ show(evaluateBoard currentBoard)) (lastPlayedPiece, evaluateBoard currentBoard)
+  | depth == 0 = (lastPlayedPiece, evaluateBoard currentBoard)
   | maximise = (snd maxIndex, fst maxIndex)
   | otherwise = (snd minIndex, fst minIndex)
   where
@@ -199,4 +221,3 @@ checkWinAI currentBoard depth
 --     piecesToCheck = take depth (pieces currentBoard)
 --     pieceDirections = map (\(a, b) -> getDirectionList (a, b) currentBoard) piecesToCheck
 --     pieceResults = zip (map snd (pieces currentBoard)) (map (\dirList -> (any (\dir -> dir >= (target currentBoard)) dirList)) pieceDirections)
-

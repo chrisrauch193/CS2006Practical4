@@ -11,7 +11,7 @@ import Utils
 
 startOptions :: Options
 startOptions = Options { optTarget = 5
-                       , optSize   = 19
+                       , optSize   = 10
                        , optColour = Black
                        , optAI     = True
                        , optRule   = Standard
@@ -26,31 +26,39 @@ options =
         (ReqArg
             (\arg opt -> return opt { optTarget = read arg :: Int })
             "INTEGER")
-        "Target number of pieces."
+        "Target number of pieces.  Positive integer."
 
     , Option "s" ["size"]
         (ReqArg
             (\arg opt -> return opt { optSize = read arg :: Int })
             "INTEGER")
-        "Size of board."
+        "Size of board.  Positive integer."
 
     , Option "c" ["colour"]
         (ReqArg
             (\arg opt -> return opt { optColour = read arg :: Col })
             "COLOUR")
-        "The player colour."
+        "The player colour.  Black or White."
 
     , Option "a" ["AI"]
         (ReqArg
             (\arg opt -> return opt { optAI = read arg :: Bool })
             "BOOLEAN")
-        "Whether to play an AI."
+        "Whether to play an AI.  True or False."
 
     , Option "r" ["rule"]
         (ReqArg
-            (\arg opt -> return opt { optRule = read arg :: Rule })
+            (\arg opt -> case arg of
+                           "Pente" -> return opt { optRule = Pente emptyPenteState }
+                           _       -> return opt { optRule = read arg :: Rule })
             "RULE")
-        "The variation of Gomoku to play."
+        "The variation of Gomoku to play.  Standard, Handicap, or Pente."
+
+    , Option "l" ["limit"]
+        (ReqArg
+            (\arg opt -> return opt { optLimit = read arg :: Float })
+            "FLOAT")
+        "Time limit.  Positive floating point number."
 
     , Option "h" ["help"]
         (NoArg
