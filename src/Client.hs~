@@ -1,9 +1,0 @@
-module Client where
-import Control.Concurrent.STM.TVar
-import Control.Monad.STM
-
-import Network.Socket (socketToHandle)
-import Network.Simple.TCP
-import System.IO
-
-
