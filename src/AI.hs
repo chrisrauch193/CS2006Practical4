@@ -262,7 +262,7 @@ calculateLineScoreBasic scoreList = sum $ map (\(a, (b, c)) -> ((4 ^ a) * b) - (
 {- | Gets a position using one of the AI's but from the Player's perspective, to generate a hint for the player
 -}
 getHints :: Board -> [Position]
-getHints currentBoard = [fst (minimax playerTree 2 False evaluateBoardBasic)]
+getHints currentBoard = [fst (minimax playerTree 2 False evaluateAggressive)]
   where
     playerTree  = buildTree genAllMoves currentBoard (playerColour currentBoard)
 

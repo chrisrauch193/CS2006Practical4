@@ -65,7 +65,7 @@ s : saves the current game to file
 l : loads the game from the save file if one exists
 h : gives a hint as to where to play
 
-You can only use hints in Network Play
+Only hints functionality in Netowrk Play
 
 
  
