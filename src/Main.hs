@@ -1,3 +1,4 @@
+{- | Main module to play the game-}
 module Main where
 
 import Graphics.Gloss
@@ -27,7 +28,7 @@ import System.Exit
 -- 'updateWorld' is called 10 times per second (that's the "10" parameter)
 -- and, if it is an AI's turn, should update the board with an AI generated
 -- move
-
+-- | Main IO loop
 main :: IO ()
 main = do options <- getOptions
           playIO (InWindow "Gomoku" (1120, 800) (10, 10)) setColour updateRate
