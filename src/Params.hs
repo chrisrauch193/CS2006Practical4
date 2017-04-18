@@ -62,3 +62,12 @@ depthAI = 2
 
 updateLoopTime :: Float
 updateLoopTime = 2.0
+
+posDirectionList :: [Position]
+posDirectionList = [(0,1), (1,0), (1,1), (1,-1)]
+
+negDirectionList :: [Position]
+negDirectionList = [(0,-1), (-1,0), (-1,-1), (-1,1)]
+
+directionList :: [Position]
+directionList = [(0, 1), (0, -1), (-1, 0), (1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1)]

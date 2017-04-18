@@ -7,12 +7,6 @@ import Debug.Trace
 import Params
 import Data.Maybe
 
-directionList :: [Position]
-directionList = [(0, 1), (0, -1), (-1, 0), (1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1)]
-
-upDirectionList :: [Position]
-upDirectionList = [(0, 1), (1, 0), (1, 1), (-1, 1)]
-
 -- Play a move on the board; return 'Nothing' if the move is invalid
 -- (e.g. outside the range of the board, or there is a piece already there)
 makeMove :: Board -> Col -> Position -> Maybe Board
@@ -80,7 +74,7 @@ checkThreeRule board = length unboundedList < 2
    where
      piece = head (pieces board)
      counts = getDirectionList piece board
-     countList = zip counts upDirectionList
+     countList = zip counts posDirectionList
      threeList = filter (\(x, y) -> x == 3) countList
      unboundedList = filter (isUnbounded board) (snd (unzip threeList))
 
