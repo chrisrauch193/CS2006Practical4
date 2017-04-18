@@ -34,7 +34,7 @@ main = do
   chan <- newChan
 
   --putStrLn "here"
-  _ <- forkIO $ connect ip port (gameplayClientLoop worldVar chan) >> return ()
+  _ <- forkIO $ connect (optIPAddress args) (optPort args) (gameplayClientLoop worldVar chan) >> return ()
   --putStrLn "here2"
   myFunkyPlay worldVar (InWindow "Gomoku" (1120, 800) (10, 10)) setColour updateRate
     (optionsWorld args) -- in Board.hs

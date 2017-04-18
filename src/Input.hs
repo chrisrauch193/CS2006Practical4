@@ -27,6 +27,12 @@ handleClientInput chan (EventKey (MouseButton LeftButton) Up m (x, y)) w
             where
               current_board = board w
               new_board     = current_board { pieces = (position, turn w):(pieces current_board) }
+handleClientInput chan (EventKey (Char k) Down _ _) w
+  = case k of
+    'h' -> (w { board = currentboard { hintPieces = getHints currentboard } }, return ())
+    _ -> (w, return())
+    where
+      currentboard = board w
 
 handleClientInput _ _ w = (w, return ())
 
@@ -49,7 +55,10 @@ handleInput (EventKey (Char k) Down _ _) w
     'l' -> do
       loadedWorld <- loadGame savepath
       return loadedWorld
-    otherwise -> return w
+    'h' -> return w { board = currentboard { hintPieces = getHints currentboard } } 
+    _ -> return w
+    where
+      currentboard = board w
 
 handleInput e w = return w
 
@@ -77,7 +86,7 @@ wrapClick world x y = case getPosition (size (board world)) x y of
 wrapPosition :: World -> Position -> World
 wrapPosition world position = case playRule (rule world) (board world) (turn world) position of
                                 (_, Nothing)             -> world
-                                (newRule, Just newBoard) -> world { board = newBoard, rule = newRule, turn = other (turn world), timeElapsed = 0 }
+                                (newRule, Just newBoard) -> world { board = newBoard { hintPieces = [] }, rule = newRule, turn = other (turn world), timeElapsed = 0 }
 
 wrapWon :: World -> Bool
 wrapWon world = case checkWon world of

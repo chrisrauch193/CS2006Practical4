@@ -33,8 +33,9 @@ main = do options <- getOptions
           boardPicture <- readBitmap "./assets/board.bmp" (cellSize $ optSize options)
           whitePicture <- readBitmap "./assets/white.bmp" (cellSize $ optSize options)
           blackPicture <- readBitmap "./assets/black.bmp" (cellSize $ optSize options)
+          hintPicture <- readBitmap "./assets/hint.bmp" (cellSize $ optSize options)
           playIO (InWindow "Gomoku" (1120, 800) (10, 10)) setColour updateRate
             (optionsWorld options) -- in Args.hs
-            (drawWorld boardPicture whitePicture blackPicture) -- in Draw.hs
+            (drawWorld boardPicture whitePicture blackPicture hintPicture) -- in Draw.hs
             handleInput -- in Input.hs
             chooseUpdateWorld -- in AI.hs

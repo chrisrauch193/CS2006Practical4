@@ -2,6 +2,7 @@ module Draw where
 
 import Graphics.Gloss
 import Board
+import AI
 import Data
 import Params
 import Debug.Trace
@@ -11,18 +12,19 @@ import Debug.Trace
 --
 -- This will need to extract the Board from the world state and draw it
 -- as a grid plus pieces.
-drawWorld :: Picture -> Picture -> Picture -> World -> IO Picture
-drawWorld boardPicture whitePicture blackPicture world
+drawWorld :: Picture -> Picture -> Picture -> Picture -> World -> IO Picture
+drawWorld boardPicture whitePicture blackPicture hintPicture world
   = return (pictures (boardLayer ++ pausedLayer ++ infoLayer ++ gridLayer ++ wonLayer))
                where
                  dimension = size (board world)
                  boards = [ (i, j) | i <- [1 .. dimension], j <- [1 .. dimension] ]
                  whites = getPositions (pieces (board world)) White
                  blacks = getPositions (pieces (board world)) Black
+                 hints = hintPieces (board world)
                  (gameInfoTitle, gameInfoText) = buildGameInfo world
                  (keyMapTitle, keyMapText) = buildKeyMap
                  boardLayer = [ drawSquares boardPicture dimension boards ]
-                 pausedLayer = if paused world then [ drawPaused ] else [ drawSquares whitePicture dimension whites, drawSquares blackPicture dimension blacks ]
+                 pausedLayer = if paused world then [ drawPaused ] else [ drawSquares whitePicture dimension whites, drawSquares blackPicture dimension blacks, drawSquares hintPicture dimension hints  ]
                  infoLayer = [ drawInfo gameInfoTitle gameInfoText leftTextOffset, drawInfo keyMapTitle keyMapText rightTextOffset ]
                  gridLayer  = [ Color black $ drawGrid dimension ]
                  wonLayer   = case checkWon world of

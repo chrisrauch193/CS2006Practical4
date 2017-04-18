@@ -12,12 +12,15 @@ data Flag =
   | Colour String
   | Help
 
-data Options = Options { optTarget :: Int
-                       , optSize   :: Int
-                       , optColour :: Col
-                       , optAI     :: Bool
-                       , optRule   :: Rule
-                       , optLimit  :: Float }
+data Options = Options { optTarget    :: Int
+                       , optSize      :: Int
+                       , optColour    :: Col
+                       , optAI        :: Bool
+                       , optAIType    :: Difficulty
+                       , optRule      :: Rule
+                       , optLimit     :: Float
+                       , optIPAddress :: String
+                       , optPort      :: String }
   deriving (Show, Read, Generic)
 instance Binary Options
 
@@ -53,7 +56,8 @@ instance Binary PenteState
 data Board = Board { size   :: Int
                    , target :: Int
                    , pieces :: [ (Position, Col) ]
-                   , playerColour :: Col }
+                   , playerColour :: Col
+                   , hintPieces :: [Position] }
   deriving (Show, Read, Eq, Generic)
 instance Binary Board
 
@@ -67,6 +71,7 @@ instance Binary Board
 data World = World { board        :: Board
                    , turn         :: Col
                    , playAI       :: Bool
+                   , aiType       :: Difficulty
                    , timeElapsed  :: Float
                    , timeLimit    :: Float
                    , paused       :: Bool
@@ -78,3 +83,8 @@ data GameTree = GameTree { game_board :: Board,
                            game_turn :: Col,
                            next_moves :: [(Position, GameTree)] }
   deriving (Show)
+
+
+data Difficulty = Basic | Aggressive | Defensive
+  deriving(Show, Read, Eq, Generic)
+instance Binary Difficulty

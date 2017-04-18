@@ -18,9 +18,9 @@ readBitmap fileName size = do picture <- loadBMP fileName
                               return (Scale xScale yScale picture)
 
 newWorld :: World -> World
-newWorld world = World newBoard Black (playAI world) 0 (timeLimit world) False newRule
+newWorld world = World newBoard Black (playAI world) (aiType world) 0 (timeLimit world) False newRule
                    where
-                     newBoard = Board (size (board world)) (target (board world)) [] (playerColour (board world))
+                     newBoard = Board (size (board world)) (target (board world)) [] (playerColour (board world)) []
                      newRule = case rule world of
                                  Pente _ -> Pente emptyPenteState
                                  oldRule -> oldRule

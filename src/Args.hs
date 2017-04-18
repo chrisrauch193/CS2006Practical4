@@ -10,12 +10,15 @@ import Data
 import Utils
 
 startOptions :: Options
-startOptions = Options { optTarget = 5
-                       , optSize   = 19
-                       , optColour = Black
-                       , optAI     = True
-                       , optRule   = Standard
-                       , optLimit  = 20.0 }
+startOptions = Options { optTarget    = 5
+                       , optSize      = 7
+                       , optColour    = Black
+                       , optAI        = True
+                       , optAIType    = Basic
+                       , optRule      = Standard
+                       , optLimit     = 20.0
+                       , optIPAddress = "138.251.29.97"
+                       , optPort      = "12345" }
 
 
 
@@ -45,6 +48,12 @@ options =
             "BOOLEAN")
         "Whether to play an AI.  True or False."
 
+    , Option "d" ["AI Type"]
+        (ReqArg
+            (\arg opt -> return opt { optAIType = read arg :: Difficulty })
+            "DIFFICULTY")
+        "Type of AI to play against.  Basic Defensive or Aggressive."
+
     , Option "r" ["rule"]
         (ReqArg
             (\arg opt -> case arg of
@@ -58,6 +67,18 @@ options =
             (\arg opt -> return opt { optLimit = read arg :: Float })
             "FLOAT")
         "Time limit.  Positive floating point number."
+
+    , Option "i" ["IP"]
+        (ReqArg
+            (\arg opt -> return opt { optIPAddress = read arg :: String })
+            "STRING")
+        "IP address for multiplayer."
+
+    , Option "p" ["port"]
+        (ReqArg
+            (\arg opt -> return opt { optPort = read arg :: String })
+            "STRING")
+        "Port for multiplayer."
 
     , Option "h" ["help"]
         (NoArg
@@ -73,6 +94,6 @@ getOptions = do args <- getArgs
                 foldl (>>=) (return startOptions) actions
 
 optionsWorld :: Options -> World
-optionsWorld options = World board Black (optAI options) 0 (optLimit options) False (optRule options)
+optionsWorld options = World board Black (optAI options) (optAIType options) 0 (optLimit options) False (optRule options)
                        where
-                         board = Board (optSize options) (optTarget options) [] (optColour options)
+                         board = Board (optSize options) (optTarget options) [] (optColour options) []

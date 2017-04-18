@@ -111,8 +111,9 @@ getBottom (xPosition, yPosition) colour (xDirection, yDirection) listOfPieces =
 undo :: World -> World
 undo world
   | null (pieces (board world)) = world
-  | playAI world                = world { board = secondBoard, rule = secondRule, timeElapsed = 0 }
-  | otherwise                   = world { board = firstBoard, rule = firstRule, turn = other (turn world), timeElapsed = 0 }
+  | (playAI world) && length (pieces (board world)) < 2 = world
+  | playAI world                = world { board = secondBoard { hintPieces = [] }, rule = secondRule, timeElapsed = 0 }
+  | otherwise                   = world { board = firstBoard { hintPieces = [] }, rule = firstRule, turn = other (turn world), timeElapsed = 0 }
   where
     (firstRule, firstBoard) = revertWorld (rule world) (board world)
     (secondRule, secondBoard) = revertWorld firstRule firstBoard

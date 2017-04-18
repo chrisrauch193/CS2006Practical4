@@ -68,7 +68,7 @@ getCurrentTreeMax w = buildTree genAllMoves b t
         b = board w
         t = turn w
 
-testTree = buildTree genAllMoves testBoard White
+--testTree = buildTree genAllMoves testBoard White
 
 -- Get the best next move from a (possibly infinite) game tree. This should
 -- traverse the game tree up to a certain depth, and pick the move which
@@ -76,10 +76,12 @@ testTree = buildTree genAllMoves testBoard White
 -- is at the top of the game tree.
 getBestMove :: Int -- ^ Maximum search depth
                -> GameTree -- ^ Initial game tree
+               -> World
                -> Position
-getBestMove meowdepth currentTree = fst bestMoveTuple
+getBestMove meowdepth currentTree w = trace (show (bestMoveTuple)) fst bestMoveTuple
   where
-    bestMoveTuple = minimax currentTree meowdepth True
+    aiTypeToPlay = aiType w
+    bestMoveTuple = if  aiTypeToPlay == Defensive then minimax currentTree meowdepth True evaluateDefensive else minimax currentTree meowdepth True evaluateAggressive
 
 --getBestMove depthAI currentTree = (fst (head (next_moves currentTree)))
         -- | depthAI == 0 = (fst (head (shuffle currentTree)))
@@ -102,13 +104,14 @@ updateWorld t w
   | turn w == other (playerColour (board w)) = newWorld
   | otherwise                                = w { timeElapsed = newTime }
   where
+    basicAI = (aiType w) == Basic
     gameWon = case checkWon w of
                 Nothing -> False
                 _       -> True
     currentTurn = turn w
     currentBoard = board w
     currentTree = getCurrentTreeMax w
-    nextMovePos = getBestMove depthAI currentTree
+    nextMovePos = if basicAI then trace (show (aiType w)) getBestBasicMove depthAI currentTree else getBestMove depthAI currentTree w
     newWorld = case playRule (rule w) (board w) (turn w) nextMovePos of
                  (_, Nothing)             -> w
                  (newRule, Just newBoard) -> w { board = newBoard, rule = newRule, turn = other (turn w), timeElapsed = 0 }
@@ -142,27 +145,29 @@ safeMax scores
   | null scores = (0, (0, 0))
   | otherwise = maximum scores
 
-minimax :: GameTree -> Int -> Bool -> (Position, Int)
-minimax currentTree depth maximise
-  | hasWon = case checkBoardWon currentBoard of
-               Just colour -> if (playerColour currentBoard) == colour then (lastPlayedPiece, minBound) else (lastPlayedPiece, maxBound)
-  | (depth == 0) || (null nextMoves) = trace ("cats" ++ show (lastPlayedPiece, evaluateSimple currentBoard)) (lastPlayedPiece, evaluateSimple currentBoard)
+minimax :: GameTree -> Int -> Bool -> (Board -> Int) -> (Position, Int)
+minimax currentTree depth maximise evaluateFunc
+  | checkWinAI currentBoard (playerColour currentBoard) depth =  (lastPlayedPiece, (minBound :: Int) + 20 - depth)--trace (show currentBoard) (lastPlayedPiece, minBound :: Int)
+  | checkWinAI currentBoard (other (playerColour currentBoard)) depth = (lastPlayedPiece, (maxBound :: Int) - 20 + depth)--trace (show currentBoard) (lastPlayedPiece, maxBound :: Int)
+  | (depth == 0) || (null nextMoves) = (lastPlayedPiece, evaluateFunc currentBoard) --trace (show currentBoard) (lastPlayedPiece, evaluateFunc currentBoard)
   | maximise = (snd maxScoreMove, fst maxScoreMove)
-  | otherwise = (snd minScoreMove, fst minScoreMove)
+  | otherwise =  (snd minScoreMove, fst minScoreMove)
   where
     currentBoard = game_board currentTree
-    hasWon = case checkBoardWon currentBoard of
-               Nothing -> False
-               Just colour -> True
     (nextMoves, nextTrees) = unzip (next_moves currentTree)
-    scores = map (\t -> snd (minimax t (depth - 1) (not maximise))) nextTrees
-    maxScoreMove = maximum $ zip scores nextMoves
+    scores = map (\t -> snd (minimax t (depth - 1) (not maximise) evaluateFunc)) nextTrees
+    maxScoreMove = safeMax $ zip scores nextMoves
     minScoreMove = minimum $ zip scores nextMoves
     lastPlayedPiece = fst (head (pieces currentBoard))
 
+evaluateDefensive :: Board -> Int
+evaluateDefensive leafBoard = evaluateAdv leafBoard True
 
-evaluateBoard :: Board -> Int
-evaluateBoard leafBoard
+evaluateAggressive :: Board -> Int
+evaluateAggressive leafBoard = evaluateAdv leafBoard False
+
+evaluateAdv :: Board -> Bool -> Int
+evaluateAdv leafBoard defensive
   | playerWin = minBound :: Int
   | aiWin = (maxBound :: Int) - 1
   | otherwise = sum finalScoreList
@@ -173,13 +178,15 @@ evaluateBoard leafBoard
     pieceLineCountList = map (\(pos, col) -> sum(getDirectionListNotBlocked (pos, col) leafBoard)) (pieces leafBoard)
     pieceColourList = map (\(pos, col) -> col) (pieces leafBoard)
     pieceScoreList = zip pieceColourList pieceLineCountList
-    finalScoreList = map (\(col, score) -> calculateLineScore col score) pieceScoreList
+    finalScoreList = map (\(col, score) -> calculateLineScore leafBoard col score defensive) pieceScoreList
 
 
-calculateLineScore :: Col -> Int -> Int
-calculateLineScore col numLines
-  | col == White = numLines--4 ^ numLines
-  | otherwise = numLines * (-2)--(4 ^ numLines) * (-2) --if numLines > 1 then (minBound :: Int) + 1 else 0
+calculateLineScore :: Board -> Col -> Int -> Bool -> Int
+calculateLineScore board col numLines defensive
+  | col == aiCol = numLines--4 ^ numLines
+  | otherwise = if defensive then  numLines * (-10) else numLines * (-3)--(4 ^ numLines) * (-2) --if numLines > 1 then (minBound :: Int) + 1 else 0
+  where
+    aiCol = other (playerColour board)
 
 
 
@@ -227,7 +234,7 @@ checkWinAI currentBoard wonCol depth
   | fst (last colWonList) == wonCol = True
   | otherwise = False
   where
-    piecesToCheck = take depth (pieces currentBoard)
+    piecesToCheck = take (depth + 1) (pieces currentBoard)
     pieceDirections = map (\(a, b) -> getDirectionList (a, b) currentBoard) piecesToCheck
     pieceResults = zip (map snd (pieces currentBoard)) (map (\dirList -> (any (\dir -> dir >= (target currentBoard)) dirList)) pieceDirections)
     colWonList = filter (\(a, b) -> b == True) pieceResults
@@ -243,8 +250,8 @@ evaluateBoardBasic leafBoard
     aiWin = checkWinAI leafBoard (other playerCol) depthAI
     playerWin = checkWinAI leafBoard playerCol depthAI
     pieceLineCountList = map (\(pos, col) -> (col, getDirectionList (pos, col) leafBoard)) (pieces leafBoard)
-    lineSizeTotalsWhite= map (\a -> getTotalSizeOccurence pieceLineCountList a White) [2..(target leafBoard)]
-    lineSizeTotalsBlack = map (\a -> getTotalSizeOccurence pieceLineCountList a Black) [2..(target leafBoard)]
+    lineSizeTotalsWhite= map (\a -> getTotalSizeOccurence pieceLineCountList a (other (playerColour leafBoard))) [2..(target leafBoard)]
+    lineSizeTotalsBlack = map (\a -> getTotalSizeOccurence pieceLineCountList a (playerColour leafBoard)) [2..(target leafBoard)]
     blackWhiteTotals = zip [2..(target leafBoard)] $ zip lineSizeTotalsWhite lineSizeTotalsBlack
 
 
@@ -265,9 +272,77 @@ evaluateSimple :: Board -> Int
 evaluateSimple currentBoard
   | playerWin = minBound :: Int
   | aiWin = (maxBound :: Int) - 1
-  | otherwise = getOccurence White piecess -  (getOccurence Black piecess)
+  | otherwise = getOccurence (other (playerColour currentBoard)) piecess - (getOccurence (playerColour currentBoard) piecess)
   where
     playerCol = playerColour currentBoard
     aiWin = checkWinAI currentBoard (other playerCol) depthAI
     playerWin = checkWinAI currentBoard playerCol depthAI
     piecess = map snd $ pieces currentBoard
+
+
+getHints :: Board -> [Position]
+getHints currentBoard = [fst (minimax playerTree 2 False evaluateBoardBasic)]
+  where
+    playerTree  = buildTree genAllMoves currentBoard (playerColour currentBoard)
+
+
+
+getBestBasicMove :: Int ->  GameTree -> Position
+getBestBasicMove depth currentTree
+  | not (null maxTargetNegOne) = if (piecePlayed currentTree fourPlacePos) then fourPlacePos  else  fst (head (next_moves currentTree))
+  | not (null maxTargetNegTwo) = if (piecePlayed currentTree threePlacePos) then threePlacePos else fst (head (next_moves currentTree))
+  | otherwise = fst (minimax currentTree depth True evaluateAggressive)
+  where
+    currentBoard = game_board currentTree
+    gameTarget = target currentBoard
+    playerCol = playerColour currentBoard
+    -- aiWin = checkWinAI currentBoard (other playerCol) depthAI
+    -- playerWin = checkWinAI currentBoard playerCol depthAI
+    playerPieces = filter (\(pos, col) -> col == playerCol) (pieces currentBoard)
+    pieceLineCountList = zip playerPieces (map (\(pos, col) -> getDirectionListNotBlockedBasic (pos, col) currentBoard) playerPieces)
+    anyPiecesToBlock = map (\(pos, array) -> ((pos,array), any (\size -> size > ((target currentBoard) - 2)) array)) pieceLineCountList
+    urgentMoves = filter (\((pos,array), block) -> block == True) anyPiecesToBlock
+    maxTargetNegOne = filter (\((pos,array), block) -> maximum array == gameTarget - 1) anyPiecesToBlock
+    maxTargetNegTwo = filter (\((pos,array), block) -> maximum array == gameTarget - 2) anyPiecesToBlock
+    fourPlacePos = getPlacePosition currentBoard (fst (fst (fst (head maxTargetNegOne)))) 4
+    threePlacePos = getPlacePosition currentBoard (fst (fst (fst (head maxTargetNegTwo)))) 3
+
+
+
+piecePlayed :: GameTree -> Position -> Bool
+piecePlayed currentTree piece = any (\pos -> pos == piece) availPos
+  where
+    availPos = map fst (next_moves currentTree)
+
+
+-- getUrgentMove :: [(Position,Bool)] -> Board -> Position
+-- getUrgentMove urgentMoves board = finalMove
+--   where
+--     directionScores = map (\((x,y),bool) -> ((x,y),(map (checkUnblockedFunction board x y  0) directionList)) urgentMoves
+--     maxScores = map (
+    
+    
+
+
+getDirectionListNotBlockedBasic :: (Position,Col) -> Board -> [Int]
+getDirectionListNotBlockedBasic (x,y) board = totalList
+    where
+      -- (x,y) = head (pieces board)
+      posDirectionMoves = map (checkUnblockedFunction board x y (pieces board) 0) posDirectionList
+      negDirectionMoves = map (checkUnblockedFunction board x y (pieces board) 0) negDirectionList
+      dirMoves = zip posDirectionMoves negDirectionMoves
+      totalList = map (\(a, b) -> (fst a + fst b - 1)  * (snd a + snd b)) dirMoves
+      --allCounts = getUnboundTotals allDirectionMoves [] 0
+      --list = map (subtract 1) allCounts
+
+
+    -- pieceLineCountList = map (\(pos, col) -> sum(getDirectionListNotBlocked (pos, col) leafBoard)) (pieces leafBoard)
+    -- pieceColourList = map (\(pos, col) -> col) (pieces leafBoard)
+    -- pieceScoreList = zip pieceColourList pieceLineCountList
+getPlacePosition :: Board -> Position -> Int -> Position
+getPlacePosition board lineEdge lineSize = (((fst lineEdge) + (fst flippedDir)), ((snd lineEdge) + (snd flippedDir)))
+  where
+    dirList = zip directionList $ map (checkUnblockedFunction board lineEdge (playerColour board) (pieces board) 0) directionList 
+    maxDir = snd $ maximum $ map (\(d, (s, b)) -> (s, d)) $ filter (\(d, (s, b)) -> b == 1) dirList
+    flippedDir = (((fst maxDir) * (-1)), ((snd maxDir) * (-1)))
+    
