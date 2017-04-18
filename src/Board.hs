@@ -175,7 +175,9 @@ checkCaptures (Pente penteState) board
   | otherwise                               = Nothing
 
 checkTime :: World -> Maybe Col
-checkTime world = if timeElapsed world > timeLimit world then Just (other (turn world)) else Nothing
+checkTime world
+  | not (timeEnabled world) = Nothing
+  | otherwise = if timeElapsed world > timeLimit world then Just (other (turn world)) else Nothing
 
 getDirectionList :: (Position, Col) -> Board -> [Int]
 getDirectionList (x, y) board = list

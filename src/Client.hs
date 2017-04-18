@@ -23,22 +23,16 @@ import Control.Concurrent
 main :: IO ()
 main = do
   args <- getOptions
-  boardPicture <- readBitmap "./assets/board.bmp" (cellSize $ optSize args)
-  whitePicture <- readBitmap "./assets/white.bmp" (cellSize $ optSize args)
-  blackPicture <- readBitmap "./assets/black.bmp" (cellSize $ optSize args)
-  hintPicture <- readBitmap "./assets/hint.bmp" (cellSize $ optSize args)
-  
-  moveVar <- newTVarIO Nothing :: IO (TVar (Maybe Position))
   worldVar <- newTVarIO (optionsWorld args)
   
   chan <- newChan
 
   --putStrLn "here"
-  _ <- forkIO $ connect ip port (gameplayClientLoop worldVar chan) >> return ()
+  _ <- forkIO $ connect (optIPAddress args) (optPort args) (gameplayClientLoop worldVar chan) >> return ()
   --putStrLn "here2"
   myFunkyPlay worldVar (InWindow "Gomoku" (1120, 800) (10, 10)) setColour updateRate
     (optionsWorld args) -- in Board.hs
-    (drawWorld boardPicture whitePicture blackPicture hintPicture) -- in Draw.hs
+    drawWorld -- in Draw.hs
     (handleClientInput chan)
     updateWorldNoAI -- in AI.hs
 
@@ -94,7 +88,7 @@ gameplayClientLoop currentWorld chan (s, _) = do
     --putStrLn "HERE FAM2"
     msgType <- hGetLine h
     --putStrLn "MEOW"
-    case msgType of
+    case msgType of 
       "S_UPDATE_BOARD" -> do
         putStrLn "RECEIVED S_UPDATE_BOARD"
         --putStrLn "HERE FAM3"
@@ -122,7 +116,6 @@ gameplayClientLoop currentWorld chan (s, _) = do
         let winningCol = (read wonCol) :: Col
         return ()
       _ -> return ()
-
 
 loop :: IO () -> IO ()
 loop a = do

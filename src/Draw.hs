@@ -5,6 +5,7 @@ import Board
 import AI
 import Data
 import Params
+import Utils
 import Debug.Trace
 
 -- Given a world state, return a Picture which will render the world state.
@@ -12,24 +13,28 @@ import Debug.Trace
 --
 -- This will need to extract the Board from the world state and draw it
 -- as a grid plus pieces.
-drawWorld :: Picture -> Picture -> Picture -> Picture -> World -> IO Picture
-drawWorld boardPicture whitePicture blackPicture hintPicture world
-  = return (pictures (boardLayer ++ pausedLayer ++ infoLayer ++ gridLayer ++ wonLayer))
-               where
-                 dimension = size (board world)
-                 boards = [ (i, j) | i <- [1 .. dimension], j <- [1 .. dimension] ]
-                 whites = getPositions (pieces (board world)) White
-                 blacks = getPositions (pieces (board world)) Black
-                 hints = hintPieces (board world)
-                 (gameInfoTitle, gameInfoText) = buildGameInfo world
-                 (keyMapTitle, keyMapText) = buildKeyMap
-                 boardLayer = [ drawSquares boardPicture dimension boards ]
-                 pausedLayer = if paused world then [ drawPaused ] else [ drawSquares whitePicture dimension whites, drawSquares blackPicture dimension blacks, drawSquares hintPicture dimension hints  ]
-                 infoLayer = [ drawInfo gameInfoTitle gameInfoText leftTextOffset, drawInfo keyMapTitle keyMapText rightTextOffset ]
-                 gridLayer  = [ Color black $ drawGrid dimension ]
-                 wonLayer   = case checkWon world of
-                                Nothing     -> [ drawTurnWon (turn world) "to play next.", drawTime (timeElapsed world) (timeLimit world) ]
-                                Just colour -> [ drawTurnWon colour "has won.", drawGameOver ]
+drawWorld :: World -> IO Picture
+drawWorld world = do
+  let dimension = size (board world)
+  boardPicture <- readBitmap "./assets/board.bmp" (cellSize $ dimension)
+  whitePicture <- readBitmap "./assets/white.bmp" (cellSize $ dimension)
+  blackPicture <- readBitmap "./assets/black.bmp" (cellSize $ dimension)
+  hintPicture <- readBitmap "./assets/hint.bmp" (cellSize $ dimension)
+  let boards = [ (i, j) | i <- [1 .. dimension], j <- [1 .. dimension] ]
+  let whites = getPositions (pieces (board world)) White
+  let blacks = getPositions (pieces (board world)) Black
+  let hints = hintPieces (board world)
+  let (gameInfoTitle, gameInfoText) = buildGameInfo world
+  let (keyMapTitle, keyMapText) = buildKeyMap
+  let boardLayer = [ drawSquares boardPicture dimension boards ]
+  let pausedLayer = if paused world then [ drawPaused ] else [ drawSquares whitePicture dimension whites, drawSquares blackPicture dimension blacks, drawSquares hintPicture dimension hints  ]
+  let infoLayer = [ drawInfo gameInfoTitle gameInfoText leftTextOffset, drawInfo keyMapTitle keyMapText rightTextOffset ]
+  let gridLayer  = [ Color black $ drawGrid dimension ]
+  let timeElapsedGame = if (timeEnabled world) then (show (timeElapsed world)) else ""
+  let wonLayer   = case checkWon world of
+                     Nothing     -> [ drawTurnWon (turn world) "to play next.", drawTime timeElapsedGame (timeLimit world) ]
+                     Just colour -> [ drawTurnWon colour "has won.", drawGameOver ]
+  return (pictures (boardLayer ++ pausedLayer ++ infoLayer ++ gridLayer ++ wonLayer))
 
 getPositions :: [(Position, Col)] -> Col -> [Position]
 getPositions [] _ = []
@@ -68,11 +73,13 @@ drawTurnWon colour info = pictures [ translate a b turnPicture
                                     turnPicture = Color glossColour $ circleSolid pieceRadius
                                     scaledText = Scale textScale textScale $ Text info
 
-drawTime :: Float -> Float -> Picture
-drawTime timeElapsed timeLimit = translate a b scaledText
+drawTime :: String -> Float -> Picture
+drawTime timeElapsed timeLimit
+  | timeElapsed == "" = Scale textScale textScale $ Text ("")
+  | otherwise = translate a b scaledText
                          where
                            (a, b) = timeOffset
-                           timeRemaining = abs (round (timeLimit - timeElapsed))
+                           timeRemaining = abs (round (timeLimit - (read timeElapsed :: Float)))
                            scaledText = Scale textScale textScale $ Text ("Time left: " ++ show timeRemaining)
 
 drawGameOver :: Picture
@@ -104,7 +111,8 @@ buildKeyMap = ("Key Map:", keyText)
               , "n: new game"
               , "p: pause"
               , "s: save"
-              , "l: load" ]
+              , "l: load"
+              , "h: hint" ]
 
 buildGameInfo :: World -> (String, [String])
 buildGameInfo world = ("Game Info:", infoText)

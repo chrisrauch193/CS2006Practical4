@@ -23,7 +23,7 @@ main = do
   serverWorld <- newTVarIO w1
   playerCount <- newTVarIO 0
   chan <- newChan
-  serve HostAny "12345" (handleClient serverWorld playerCount chan)
+  serve HostAny (optPort os) (handleClient serverWorld playerCount chan)
 
 handleClient :: TVar World -> TVar Int -> Chan World -> (Socket, SockAddr) -> IO ()
 handleClient startBoard playerCount chan (s, _) = do

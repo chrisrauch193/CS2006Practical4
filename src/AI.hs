@@ -78,7 +78,7 @@ getBestMove :: Int -- ^ Maximum search depth
                -> GameTree -- ^ Initial game tree
                -> World
                -> Position
-getBestMove meowdepth currentTree w = trace (show (bestMoveTuple)) fst bestMoveTuple
+getBestMove meowdepth currentTree w = fst bestMoveTuple
   where
     aiTypeToPlay = aiType w
     bestMoveTuple = if  aiTypeToPlay == Defensive then minimax currentTree meowdepth True evaluateDefensive else minimax currentTree meowdepth True evaluateAggressive
@@ -111,7 +111,7 @@ updateWorld t w
     currentTurn = turn w
     currentBoard = board w
     currentTree = getCurrentTreeMax w
-    nextMovePos = if basicAI then trace (show (aiType w)) getBestBasicMove depthAI currentTree else getBestMove depthAI currentTree w
+    nextMovePos = if basicAI then getBestBasicMove depthAI currentTree else getBestMove depthAI currentTree w
     newWorld = case playRule (rule w) (board w) (turn w) nextMovePos of
                  (_, Nothing)             -> w
                  (newRule, Just newBoard) -> w { board = newBoard, rule = newRule, turn = other (turn w), timeElapsed = 0 }
@@ -242,7 +242,7 @@ checkWinAI currentBoard wonCol depth
 
 evaluateBoardBasic :: Board -> Int
 evaluateBoardBasic leafBoard
-  | playerWin = trace "PLAYER WILL FUCKING WIN" minBound :: Int
+  | playerWin = minBound :: Int
   | aiWin = (maxBound :: Int)
   | otherwise = calculateLineScoreBasic blackWhiteTotals
   where

@@ -19,6 +19,7 @@ data Options = Options { optTarget    :: Int
                        , optAIType    :: Difficulty
                        , optRule      :: Rule
                        , optLimit     :: Float
+                       , optTime      :: Bool
                        , optIPAddress :: String
                        , optPort      :: String }
   deriving (Show, Read, Generic)
@@ -74,6 +75,7 @@ data World = World { board        :: Board
                    , aiType       :: Difficulty
                    , timeElapsed  :: Float
                    , timeLimit    :: Float
+                   , timeEnabled  :: Bool
                    , paused       :: Bool
                    , rule         :: Rule }
   deriving (Show, Read, Generic)

@@ -14,9 +14,10 @@ startOptions = Options { optTarget    = 5
                        , optSize      = 7
                        , optColour    = Black
                        , optAI        = True
-                       , optAIType    = Basic
+                       , optAIType    = Defensive
                        , optRule      = Standard
                        , optLimit     = 20.0
+                       , optTime      = False
                        , optIPAddress = "138.251.29.97"
                        , optPort      = "12345" }
 
@@ -68,6 +69,12 @@ options =
             "FLOAT")
         "Time limit.  Positive floating point number."
 
+    , Option "g" ["enable time"]
+        (ReqArg
+            (\arg opt -> return opt { optTime = read arg :: Bool })
+            "BOOLEAN")
+        "Enable time.  True or False."
+
     , Option "i" ["IP"]
         (ReqArg
             (\arg opt -> return opt { optIPAddress = read arg :: String })
@@ -94,6 +101,6 @@ getOptions = do args <- getArgs
                 foldl (>>=) (return startOptions) actions
 
 optionsWorld :: Options -> World
-optionsWorld options = World board Black (optAI options) (optAIType options) 0 (optLimit options) False (optRule options)
+optionsWorld options = World board Black (optAI options) (optAIType options) 0 (optLimit options)(optTime options) False (optRule options)
                        where
                          board = Board (optSize options) (optTarget options) [] (optColour options) []

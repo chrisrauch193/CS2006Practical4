@@ -11,6 +11,7 @@ import Control.Concurrent.Chan
 import Data
 import Utils
 import Params
+import Control.Concurrent.STM
 
 -- Update the world state given an input event. Some sample input events
 -- are given; when they happen, there is a trace printed on the console
@@ -21,12 +22,9 @@ import Params
 
 handleClientInput :: Chan String -> Event -> World -> (World, IO ())
 handleClientInput chan (EventKey (MouseButton LeftButton) Up m (x, y)) w
-  = case getPosition (size (board w)) x y of
-          Nothing -> (w, return ())
-          Just position -> (w { board = new_board, turn = other (turn w) }, writeChan chan (show position))
-            where
-              current_board = board w
-              new_board     = current_board { pieces = (position, turn w):(pieces current_board) }
+  | wrapWon w = (w, return())
+  | otherwise = wrapChan w chan x y
+              
 handleClientInput chan (EventKey (Char k) Down _ _) w
   = case k of
     'h' -> (w { board = currentboard { hintPieces = getHints currentboard } }, return ())
@@ -92,3 +90,8 @@ wrapWon :: World -> Bool
 wrapWon world = case checkWon world of
                   Nothing -> False
                   _       -> True
+
+wrapChan :: World -> Chan String -> Float -> Float -> (World, IO ())
+wrapChan world chan x y = case getPosition (size (board world)) x y of
+                         Nothing       -> (world , return())
+                         Just position -> (wrapPosition world position, writeChan chan (show  position))
