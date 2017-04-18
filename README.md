@@ -16,16 +16,17 @@ The command flags are as follows:
 
 For the local game, all flags can be used apart from -i for IP and -p for the Port number. 
 
-  -t INTEGER  --target=INTEGER  The target for the game.  Positive integer. Default to 5.
-  -s INTEGER  --size=INTEGER    Size of board.  Positive integer. Default to 19.
-  -c COLOUR   --colour=COLOUR   The player colour.  Black or White. Default is Human Player plays first and the game always starts with Black playing first 
-  -a BOOLEAN  --AI=BOOLEAN      Whether to play an AI.  True or False. Defaults to True
-  -r RULE     --rule=RULE       The variation of Gomoku to play.  the options are: Standard, Handicap, or Pente. Default game mode is Standard. Handicap adds the rule of three and three and four and four to the player playing as black.
-  -l FLOAT    --limit=FLOAT     Time limit. Insert a time limit for the human players moves Positive floating point number. Standard limit is 20 seconds. 
-  -g BOOLEAN  --enable time=BOOLEAN  Enable time.  True or False.
-  -i STRING   --IP=STRING       IP address for multiplayer. Argument for the Client
-  -p STRING   --port=STRING     Port for multiplayer. Argument for the Client and Server, Default is 12345.
-  -h          --help            Show help.
+  -t INTEGER    --target=INTEGER  The target for the game.  Positive integer. Default to 5.
+  -s INTEGER    --size=INTEGER    Size of board.  Positive integer. Default to 19.
+  -c COLOUR     --colour=COLOUR   The player colour.  Black or White. Default is Human Player plays first and the game always starts with Black playing first 
+  -a BOOLEAN    --AI=BOOLEAN      Whether to play an AI.  True or False. Defaults to True
+  -d DIFFICULTY --AI Type=DIFFICULTY   Type of AI to play against.  Basic Defensive or Aggressive.
+  -r RULE       --rule=RULE       The variation of Gomoku to play.  the options are: Standard, Handicap, or Pente. Default game mode is Standard. Handicap adds the rule of three and three and four and four to the player playing as black.
+  -l FLOAT      --limit=FLOAT     Time limit. Insert a time limit for the human players moves Positive floating point number. Standard limit is 20 seconds. 
+  -g BOOLEAN    --enable time=BOOLEAN  Enable time.  True or False.
+  -i STRING     --IP=STRING       IP address for multiplayer. Argument for the Client
+  -p STRING     --port=STRING     Port for multiplayer. Argument for the Client and Server, Default is 12345.
+  -h            --help            Show help.
 
 E.g. an example game could be setup as follows with command flags (Double Dashes after the executable name to allow command line flags). 
 
@@ -64,8 +65,7 @@ s : saves the current game to file
 l : loads the game from the save file if one exists
 h : gives a hint as to where to play
 
-
-
+You can only use hints in Network Play
 
 
  
