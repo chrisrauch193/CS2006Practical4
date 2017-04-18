@@ -1,3 +1,4 @@
+{- | Stores all of the data definitions of the program-}
 {-# LANGUAGE DeriveGeneric #-}
 module Data where
 
@@ -5,88 +6,87 @@ import Data.List
 import GHC.Generics
 import Data.Binary
 
-
+{- | All of the flags used in the program -}
 data Flag =
     Target String
   | Size String
   | Colour String
   | Help
 
-data Options = Options { optTarget    :: Int
-                       , optSize      :: Int
-                       , optColour    :: Col
-                       , optAI        :: Bool
-                       , optAIType    :: Difficulty
-                       , optRule      :: Rule
-                       , optLimit     :: Float
-                       , optTime      :: Bool
-                       , optIPAddress :: String
+{- | all of the Options to the game -}
+data Options = Options { optTarget    :: Int -- | The target to win the game
+                       , optSize      :: Int -- | The board size
+                       , optColour    :: Col -- | The colour being played
+                       , optAI        :: Bool -- | AI or No AI
+                       , optAIType    :: Difficulty -- | AI Difficulty
+                       , optRule      :: Rule -- | The version of the game being played, i.e. the rule
+                       , optLimit     :: Float -- | The time limit for a move
+                       , optTime      :: Bool -- | Whether a time limit is in force
+                       , optIPAddress :: String -- | The IP address to connect to
                        , optPort      :: String }
   deriving (Show, Read, Generic)
+-- | For saving and loading
 instance Binary Options
 
+-- | The colours in the game
 data Col = Black | White
   deriving (Show, Eq, Read, Generic)
+-- | For saving and loading
 instance Binary Col
-
+-- | Postion type
 type Position = (Int, Int)
-
+-- | Co-ordinate type
 type Coordinate = (Float, Float)
 
+-- | Different types of rules to be played
 data Rule =
-    Standard
-  | Handicap
+   Standard -- | standard rules
+  | Handicap -- | Rule of Three and Three and Four and Four applied
   | Pente PenteState
   deriving (Show, Read, Generic)
+-- | For saving and loading
 instance Binary Rule
 
--- A Board is a record containing the board size (a board is a square grid,
--- n * n), the number of pieces in a row required to win, and a list
--- of pairs of position and the colour at that position.  So a 10x10 board
--- for a game of 5 in a row with a black piece at 5,5 and a white piece at 8,7
--- would be represented as:
---
--- Board 10 5 [((5, 5), Black), ((8, 7), White)]
-
-data PenteState = PenteState { blackCaptures  :: Int
-                             , whiteCaptures  :: Int
+-- | Pente State holding the data for pente
+data PenteState = PenteState { blackCaptures  :: Int  -- | Number of Captures Black has
+                             , whiteCaptures  :: Int  -- | Number of Captures White has
                              , captureHistory :: [ (Board, Int, Int) ] }
   deriving (Show, Read, Generic)
+-- | For saving and loading
 instance Binary PenteState
 
-data Board = Board { size   :: Int
-                   , target :: Int
-                   , pieces :: [ (Position, Col) ]
-                   , playerColour :: Col
+-- | The board
+data Board = Board { size   :: Int -- | The board size
+                   , target :: Int -- | The target number of pieces needed to get in a row
+                   , pieces :: [ (Position, Col) ] -- | All of the pieces on the board
+                   , playerColour :: Col           -- | The colour of the player
                    , hintPieces :: [Position] }
   deriving (Show, Read, Eq, Generic)
+-- | For saving and loading
 instance Binary Board
 
--- Overall state is the board and whose turn it is, plus any further
--- information about the world (this may later include, for example, player
--- names, timers, information about rule variants, etc)
---
--- Feel free to extend this, and 'Board' above with anything you think
--- will be useful (information for the AI, for example, such as where the
--- most recent moves were).
-data World = World { board        :: Board
-                   , turn         :: Col
-                   , playAI       :: Bool
-                   , aiType       :: Difficulty
-                   , timeElapsed  :: Float
-                   , timeLimit    :: Float
-                   , timeEnabled  :: Bool
-                   , paused       :: Bool
+-- | The world information
+data World = World { board        :: Board -- | The Board
+                   , turn         :: Col -- | Which colour's turn it is
+                   , playAI       :: Bool -- | Whether or not the AI is being played
+                   , aiType       :: Difficulty -- | Difficulty of the AI
+                   , timeElapsed  :: Float -- | Time elapsed since re-setting
+                   , timeLimit    :: Float -- | The max time limit for moves
+                   , timeEnabled  :: Bool -- | Whether or not you are playing with a time limit
+                   , paused       :: Bool -- | Whether or not the game has been paused or not
                    , rule         :: Rule }
   deriving (Show, Read, Generic)
+-- | For saving and loading
 instance Binary World
 
-data GameTree = GameTree { game_board :: Board,
-                           game_turn :: Col,
+-- | The Game Tree used by the AI
+data GameTree = GameTree { game_board :: Board, -- | The board at that moment in time
+                           game_turn :: Col,    -- | Who's turn it is
                            next_moves :: [(Position, GameTree)] }
   deriving (Show)
 
-
+-- | Difficulty of the AI,
 data Difficulty = Basic | Aggressive | Defensive
   deriving(Show, Read, Eq, Generic)
+-- | For saving and loading
 instance Binary Difficulty

@@ -1,3 +1,4 @@
+{- | The server function in the code -}
 module Main where
 import Control.Concurrent.STM.TVar
 import Control.Monad.STM
@@ -16,6 +17,11 @@ import Data
 import Utils
 import Params
 
+{- | The main loop in the server to handle connections from the clients
+     Instantiate an initial world, as a TVar to allow atomic updating of the world
+     Keeps a track of the number of clients connected.
+     Instantiates chan for communication outside of a connection
+-}
 main :: IO ()
 main = do
   os <- getOptions
@@ -25,12 +31,24 @@ main = do
   chan <- newChan
   serve HostAny (optPort os) (handleClient serverWorld playerCount chan)
 
+{- | This handles the gameplay loop for every client connection
+    Connections go as follows:
+    Accept Connection -> Send Client a Colour -> Send Client a Board
+    -> Instantiate Dup Chan for potential extra players -> Start Loop
+    Loop:
+      Send current client board -> If won board send winning colour to client
+      ->Tell current client to make move-> Wait for Client to Make move
+      -> Accept/Reject Move
+      -> Make accepted Move on Server Board -> Update World with new Board and next colour
+      -> Send Updated World through Dup Chan to all clients
+      -> Call loop again with Dup Chan in arguments so next client gets the updated world
+-}
 handleClient :: TVar World -> TVar Int -> Chan World -> (Socket, SockAddr) -> IO ()
 handleClient startBoard playerCount chan (s, _) = do
   h <- socketToHandle s ReadWriteMode
   connectMessage <- hGetLine h
   putStrLn connectMessage
-  
+
   nextColour <- atomically $ do
     curPlayerCount <- readTVar playerCount
     modifyTVar playerCount (+ 1)
@@ -45,14 +63,14 @@ handleClient startBoard playerCount chan (s, _) = do
       hPutStrLn h "S_ACCEPT"
       putStrLn "SENDING S_ACCEPT"
       hPrint h col
-      
+
       clientChan <- dupChan chan
       boardLoop (readTVarIO startBoard) h col clientChan
       return ()
 
   where boardLoop input h col clientChan = do
           nextWorld <- input
-          
+
           hPutStrLn h "S_UPDATE_BOARD"
           putStrLn "SENDING UPDATE_BOARD"
           hPrint h  $ board nextWorld
@@ -71,7 +89,7 @@ handleClient startBoard playerCount chan (s, _) = do
                 "C_MAKE_MOVE" -> do
                   putStrLn "RECEIVED C_MAKE_MOVE"
                   playerMoveString <- hGetLine h
-                  
+
                   case makeMove (board nextWorld) col (read playerMoveString) of
                     Nothing -> do
                       hPutStrLn h "S_REJECT_MOVE"
@@ -84,17 +102,8 @@ handleClient startBoard playerCount chan (s, _) = do
                 _ -> return ()
               else boardLoop (readChan clientChan) h col clientChan
 
-
-replaceBoard :: Board -> Board
-replaceBoard newBoard = newBoard
-
---boardToString :: Board -> String
---boardToString b = (show (size b)) ++ " " ++ (show stringPieces)
---        where
---          piece = pieces b
---          stringPieces = map (showPiece) piece
-
--- "6 0:0=w 0:1=b"
+{- | Used the connection to assign the next colour
+-}
 assignColour :: Int -> Maybe Col
 assignColour 0 = Just Black
 assignColour 1 = Just White
